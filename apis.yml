@@ -1,0 +1,54 @@
+name: FlightFinder
+description: 'Read-only JSON API over a merged aviation-safety corpus: 164,068 accident narratives aggregated
+  from 128 official investigation authorities (NTSB, ATSB, AAIB, BEA, MAK and national agencies), deduplicated
+  into one occurrence-level dataset, plus the FAA wildlife-strike, laser-incident and drone-sighting datasets
+  and OurAirports reference data. Every record carries its source, attribution, licence and a deep link,
+  and GET /sources returns the per-source licence and narrative policy. Keyless tier answers without an
+  Authorization header at 100 requests/day/IP.'
+url: https://raw.githubusercontent.com/api-evangelist/flightfinder/refs/heads/main/apis.yml
+created: '2026-09-03'
+modified: '2026-09-03'
+specificationVersion: '0.21'
+tags:
+- Aviation
+- Aviation Safety
+- Accident Data
+- Open Data
+- Public Domain
+- Transportation
+- Government Data
+- Research
+- Reference Data
+apis:
+- name: FlightFinder Aviation Safety Data API
+  description: REST/JSON over the merged corpus. 17 paths in the served OpenAPI 3.0.3. Keyless GET tier,
+    CORS open, per-record licence and attribution.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Aviation
+  - Aviation Safety
+  - Accident Data
+  - Open Data
+  - Government Data
+  properties:
+  - type: OpenAPI
+    url: https://himaxym.com/api/v1/data/openapi.json
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+maintainers:
+- FN: FlightFinder
+  url: https://himaxym.com/
+x-source:
+  via: api-search/inbox#19, submitted 2026-08-31
+  fetched: '2026-09-03'
+  note: 'Slug follows the BRAND, not the hosting domain: the page title, the OpenAPI info.title and their
+    own llms.txt all say FlightFinder, and the llms.txt writes it as "FlightFinder (himaxym.com)". Every
+    property was fetched 200 before this was written and a keyless GET /events returned real records;
+    an invented control path returns 404. No apis.json is published.'
