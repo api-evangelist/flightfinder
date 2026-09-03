@@ -1,10 +1,12 @@
 name: FlightFinder
 description: 'Read-only JSON API over a merged aviation-safety corpus: 164,068 accident narratives aggregated
-  from 128 official investigation authorities (NTSB, ATSB, AAIB, BEA, MAK and national agencies), deduplicated
+  from 130 official investigation authorities (NTSB, ATSB, AAIB, BEA, MAK and national agencies), deduplicated
   into one occurrence-level dataset, plus the FAA wildlife-strike, laser-incident and drone-sighting datasets
   and OurAirports reference data. Every record carries its source, attribution, licence and a deep link,
   and GET /sources returns the per-source licence and narrative policy. Keyless tier answers without an
-  Authorization header at 100 requests/day/IP.'
+  Authorization header at 100 requests/day/IP, and the same corpus is served to agents by an anonymous
+  remote MCP server at https://himaxym.com/mcp with nine tools.'
+image: https://himaxym.com/og-image.png?v=2
 url: https://raw.githubusercontent.com/api-evangelist/flightfinder/refs/heads/main/apis.yml
 created: '2026-09-03'
 modified: '2026-09-03'
@@ -19,10 +21,11 @@ tags:
 - Government Data
 - Research
 - Reference Data
+- Agent Ready
 apis:
 - name: FlightFinder Aviation Safety Data API
-  description: REST/JSON over the merged corpus. 17 paths in the served OpenAPI 3.0.3. Keyless GET tier,
-    CORS open, per-record licence and attribution.
+  description: REST/JSON over the merged corpus. 17 paths / 18 operations in the served OpenAPI 3.0.3.
+    Keyless GET tier, CORS open, RateLimit-* headers on every response, per-record licence and attribution.
   humanURL: https://himaxym.com/developers
   baseURL: https://himaxym.com/api/v1/data
   tags:
@@ -34,6 +37,8 @@ apis:
   properties:
   - type: OpenAPI
     url: https://himaxym.com/api/v1/data/openapi.json
+  - type: OpenAPI
+    url: openapi/flightfinder-aviation-safety-data-openapi.json
   - type: Documentation
     url: https://himaxym.com/developers
   - type: LLMsTxt
@@ -42,8 +47,28 @@ apis:
     url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
   - type: X-SourceLicenses
     url: https://himaxym.com/api/v1/data/sources
+  - type: Overlay
+    url: overlays/flightfinder-aviation-safety-data-overlay.yaml
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- name: FlightFinder Aviation Safety MCP Server
+  description: First-party remote MCP server over Streamable HTTP (JSON-RPC 2.0, protocol 2025-06-18)
+    exposing nine read tools over the same corpus. Anonymous — no key, no account, no install. Probed
+    live on 2026-09-03; initialize and tools/list both returned 200 without an Authorization header.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/mcp
+  tags:
+  - Aviation Safety
+  - MCP
+  - Agent Ready
+  properties:
+  - type: MCPServer
+    url: mcp/flightfinder-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/flightfinder-tool-crosswalk.yml
 maintainers:
 - FN: FlightFinder
+  email: support@himaxym.com
   url: https://himaxym.com/
 x-source:
   via: api-search/inbox#19, submitted 2026-08-31
@@ -52,3 +77,117 @@ x-source:
     own llms.txt all say FlightFinder, and the llms.txt writes it as "FlightFinder (himaxym.com)". Every
     property was fetched 200 before this was written and a keyless GET /events returned real records;
     an invented control path returns 404. No apis.json is published.'
+x-ownership-check:
+  checked: '2026-09-03'
+  verdict: confirmed
+  note: 'The spec at https://himaxym.com/api/v1/data/openapi.json describes THIS provider by its own
+    self-description, not merely by its fetch URL: info.title "FlightFinder Aviation Safety Data API",
+    servers[0].url https://himaxym.com/api/v1/data, info.contact.url and info.termsOfService both
+    https://himaxym.com/developers. The MCP server at https://himaxym.com/mcp returns serverInfo
+    {name: flightfinder-safety, title: "FlightFinder Aviation Safety"}. No sibling-brand or third-party
+    contract was found on any probed host.'
+common:
+- type: DomainSecurity
+  url: security/flightfinder-domain-security.yml
+- type: Authentication
+  url: authentication/flightfinder-authentication.yml
+- type: MCPServer
+  url: mcp/flightfinder-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/flightfinder-tool-crosswalk.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: WellKnown
+  url: well-known/flightfinder-well-known.yml
+- type: APICatalog
+  url: https://himaxym.com/.well-known/api-catalog
+- type: ContentSignal
+  url: https://himaxym.com/robots.txt
+- type: Conventions
+  url: conventions/flightfinder-conventions.yml
+- type: ErrorCatalog
+  url: errors/flightfinder-problem-types.yml
+- type: RateLimits
+  url: rate-limits/flightfinder-rate-limits.yml
+- type: Plans
+  url: plans/flightfinder-plans-pricing.yml
+- type: Sandbox
+  url: sandbox/flightfinder-sandbox.yml
+- type: Lifecycle
+  url: lifecycle/flightfinder-lifecycle.yml
+- type: Conformance
+  url: conformance/flightfinder-conformance.yml
+- type: DataModel
+  url: data-model/flightfinder-data-model.yml
+- type: Packages
+  url: packages/flightfinder-packages.yml
+- type: LLMsTxt
+  url: llms/flightfinder-llms.txt
+- type: DeveloperPortal
+  url: https://himaxym.com/developers
+- type: APIReference
+  url: https://himaxym.com/developers
+- type: GettingStarted
+  url: https://himaxym.com/developers
+- type: SignUp
+  url: https://himaxym.com/developers#dev-key-form
+- type: Support
+  url: https://himaxym.com/contact
+- type: Blog
+  url: https://himaxym.com/aviation-news
+- type: Pricing
+  url: https://himaxym.com/pricing
+- type: TermsOfService
+  url: https://himaxym.com/legal/terms
+- type: PrivacyPolicy
+  url: https://himaxym.com/legal/privacy
+- type: X-Methodology
+  url: https://himaxym.com/methodology
+- type: X-EditorialStandards
+  url: https://himaxym.com/editorial-standards
+- type: X-AIContentPolicy
+  url: https://himaxym.com/ai-content-policy
+- type: X-Attributions
+  url: https://himaxym.com/legal/attributions
+x-pointer-verification:
+  checked: '2026-09-03'
+  method: 'Every URL below was fetched with a browser User-Agent and its status recorded.'
+  results:
+  - {url: 'https://himaxym.com/developers', status: 200}
+  - {url: 'https://himaxym.com/api/v1/data/openapi.json', status: 200}
+  - {url: 'https://himaxym.com/llms.txt', status: 200}
+  - {url: 'https://documenter.getpostman.com/view/57824278/2sBYAuTBcp', status: 200}
+  - {url: 'https://himaxym.com/api/v1/data/sources', status: 200}
+  - {url: 'https://rapidapi.com/disclaimer8/api/aviation-safety-data', status: 200}
+  - {url: 'https://himaxym.com/mcp', status: 200, note: 'POST JSON-RPC; GET returns 405 by design'}
+  - {url: 'https://himaxym.com/.well-known/api-catalog', status: 200}
+  - {url: 'https://himaxym.com/robots.txt', status: 200}
+  - {url: 'https://himaxym.com/contact', status: 200}
+  - {url: 'https://himaxym.com/aviation-news', status: 200}
+  - {url: 'https://himaxym.com/pricing', status: 200}
+  - {url: 'https://himaxym.com/legal/terms', status: 200}
+  - {url: 'https://himaxym.com/legal/privacy', status: 200}
+  - {url: 'https://himaxym.com/legal/attributions', status: 200}
+  - {url: 'https://himaxym.com/methodology', status: 200}
+  - {url: 'https://himaxym.com/editorial-standards', status: 200}
+  - {url: 'https://himaxym.com/ai-content-policy', status: 200}
+  - {url: 'https://himaxym.com/og-image.png?v=2', status: 200}
+  not_emitted:
+  - {url: 'https://github.com/disclaimer8/flightfinder', status: 404, reason: 'Declared in the site''s
+      own schema.org Organization sameAs, but the repository does not exist publicly — no GitHubOrganization
+      pointer emitted.'}
+  - {url: 'https://himaxym.com/signup', status: 200, reason: 'Returns the SPA shell byte-for-byte identical
+      to the 404 body, with no page-specific title or description — unverifiable as a real page, so SignUp
+      points at the developer page''s key form instead.'}
+  - {url: 'https://himaxym.com/status', status: 404, reason: 'No status page exists — no StatusPage pointer.'}
+  - {url: 'https://himaxym.com/changelog', status: 404, reason: 'No changelog exists — no ChangeLog pointer.'}
+  - {url: 'https://himaxym.com/.well-known/security.txt', status: 404, reason: 'No security.txt — no
+      SecurityTxt or Security pointer.'}
+  - {url: 'https://doi.org/10.5281/zenodo.21347859', status: 403, reason: 'Zenodo concept DOI declared in
+      llms.txt; doi.org bot-challenged this crawler, so it is recorded in packages/ rather than emitted
+      as a pointer.'}
+x-enrichment:
+  date: '2026-09-03'
+  status: enriched
+  artifacts_added: 23
+  pass: local-v1

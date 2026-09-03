@@ -1,0 +1,162 @@
+overlay: 1.0.0
+info:
+  title: FlightFinder Aviation Safety Data API — API Evangelist enhancements
+  version: 1.0.0
+x-provenance:
+  generated: '2026-09-03'
+  method: generated
+  source: >-
+    Generated against openapi/flightfinder-aviation-safety-data-openapi.json
+    (fetched verbatim from https://himaxym.com/api/v1/data/openapi.json on
+    2026-09-03). This overlay is OUR enhancement layer and is never merged into the
+    provider's original spec.
+  rationale: >-
+    The served contract is unusually candid in prose but thin in machine-readable
+    handles: not one of its 18 operations declares an operationId, and it declares no
+    tags at all. Both are pure additions — they change no behaviour and contradict
+    nothing the provider states. The operationIds below are OUR proposal, derived
+    from method + path, and are marked as such so nothing downstream mistakes them
+    for the provider's own naming.
+extends: openapi/flightfinder-aviation-safety-data-openapi.json
+actions:
+- target: $.tags
+  description: Declare the resource groupings the paths already imply.
+  update:
+  - name: Occurrences
+    description: The deduplicated occurrence corpus and its per-source attribution.
+  - name: Narratives
+    description: Investigation narratives addressed by authority and case id.
+  - name: Analytics
+    description: Derived family-level safety statistics.
+  - name: Hazards
+    description: FAA wildlife-strike, laser-incident and drone-sighting datasets.
+  - name: Reference
+    description: Airport reference data and the source/licence registry.
+  - name: Keys
+    description: Account-authenticated API key lifecycle.
+  - name: System
+    description: Connectivity and key verification.
+- target: $.paths['/events'].get
+  update:
+    operationId: listOccurrences
+    x-operationId-source: api-evangelist-overlay (the served spec declares none)
+    tags: [Occurrences]
+- target: $.paths['/events/{id}'].get
+  update:
+    operationId: getOccurrence
+    x-operationId-source: api-evangelist-overlay
+    tags: [Occurrences]
+- target: $.paths['/narratives/{source}/{id}'].get
+  update:
+    operationId: getNarrative
+    x-operationId-source: api-evangelist-overlay
+    tags: [Narratives]
+- target: $.paths['/aircraft/{family}/safety'].get
+  update:
+    operationId: getAircraftFamilySafety
+    x-operationId-source: api-evangelist-overlay
+    tags: [Analytics]
+- target: $.paths['/wildlife-strikes'].get
+  update:
+    operationId: getWildlifeStrikes
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/wildlife-strikes/airport/{slug}'].get
+  update:
+    operationId: getWildlifeStrikesByAirport
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/wildlife-strikes/species/{slug}'].get
+  update:
+    operationId: getWildlifeStrikesBySpecies
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/laser-strikes'].get
+  update:
+    operationId: getLaserStrikes
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/laser-strikes/state/{slug}'].get
+  update:
+    operationId: getLaserStrikesByState
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/laser-strikes/airport/{slug}'].get
+  update:
+    operationId: getLaserStrikesByAirport
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/drone-sightings'].get
+  update:
+    operationId: getDroneSightings
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/drone-sightings/state/{slug}'].get
+  update:
+    operationId: getDroneSightingsByState
+    x-operationId-source: api-evangelist-overlay
+    tags: [Hazards]
+- target: $.paths['/airports/{ident}'].get
+  update:
+    operationId: getAirport
+    x-operationId-source: api-evangelist-overlay
+    tags: [Reference]
+- target: $.paths['/sources'].get
+  update:
+    operationId: listSources
+    x-operationId-source: api-evangelist-overlay
+    tags: [Reference]
+- target: $.paths['/ping'].get
+  update:
+    operationId: ping
+    x-operationId-source: api-evangelist-overlay
+    tags: [System]
+- target: $.paths['/keys'].post
+  update:
+    operationId: createApiKey
+    x-operationId-source: api-evangelist-overlay
+    tags: [Keys]
+    x-agentic-access:
+      action_class: write
+      consequence: creates a credential shown exactly once; consumes 1 of 5 account slots
+      reversal: DELETE /keys/{id}
+      replay_safe: false
+- target: $.paths['/keys'].get
+  update:
+    operationId: listApiKeys
+    x-operationId-source: api-evangelist-overlay
+    tags: [Keys]
+- target: $.paths['/keys/{id}'].delete
+  update:
+    operationId: revokeApiKey
+    x-operationId-source: api-evangelist-overlay
+    tags: [Keys]
+    x-agentic-access:
+      action_class: destructive
+      consequence: revokes a credential permanently
+      reversal: none — mint a new key
+      replay_safe: true
+- target: $.servers
+  description: >-
+    No change to the host. Recorded only to state explicitly that the served
+    servers[] block is correct and complete — https://himaxym.com/api/v1/data is the
+    live base URL, confirmed by keyless calls on 2026-09-03.
+  update: []
+- target: $.info
+  description: Cross-link the derived artifacts that carry what the spec does not model.
+  update:
+    x-artifacts:
+      conventions: conventions/flightfinder-conventions.yml
+      errors: errors/flightfinder-problem-types.yml
+      rate_limits: rate-limits/flightfinder-rate-limits.yml
+      authentication: authentication/flightfinder-authentication.yml
+      data_model: data-model/flightfinder-data-model.yml
+      mcp: mcp/flightfinder-mcp.yml
+      tool_crosswalk: mcp/flightfinder-tool-crosswalk.yml
+x-gaps-not-fixed-here:
+- No 5xx response is declared on any operation. An overlay could add one, but that
+  would assert a contract the provider has not made — reported instead.
+- The hazard aggregate responses are untyped objects. Modelling them would be
+  authoring the provider's schemas, not enhancing them.
+- No request/response examples exist. Adding them would put values into the
+  provider's contract that the provider never published.

@@ -1,0 +1,104 @@
+generated: '2026-09-03'
+method: probed
+source: >-
+  The "Rate limits" table on https://himaxym.com/developers and the Rate limits
+  paragraph in info.description of
+  https://himaxym.com/api/v1/data/openapi.json, confirmed against live response
+  headers observed on 2026-09-03 from GET
+  https://himaxym.com/api/v1/data/events?limit=1 and POST https://himaxym.com/mcp.
+docs: https://himaxym.com/developers
+limit_count: 4
+rate_limits:
+- scope: per-ip
+  tier: keyless (no Authorization header)
+  limit: 100
+  window: 1 day
+  window_seconds: 86400
+  burst: null
+  reset: UTC midnight
+  observed_headers:
+    RateLimit-Policy: 100;w=86400
+    RateLimit-Limit: '100'
+    RateLimit-Remaining: '91'
+    RateLimit-Reset: '86167'
+  evidence: >-
+    Observed live on an unauthenticated GET /api/v1/data/events?limit=1,
+    2026-09-03.
+  method: probed
+- scope: per-key
+  tier: free key
+  limit: 1000
+  window: 1 day
+  window_seconds: 86400
+  burst: null
+  reset: UTC midnight
+  method: searched
+- scope: per-key
+  tier: free key
+  limit: 60
+  window: 1 minute
+  window_seconds: 60
+  burst: null
+  method: searched
+- scope: per-key
+  tier: pro key ($49/month)
+  limit: 20000
+  window: 1 day
+  window_seconds: 86400
+  burst: null
+  reset: UTC midnight
+  note: The 60/minute limiter still applies on the pro tier.
+  method: searched
+mcp_endpoint_limits:
+- scope: per-ip
+  surface: https://himaxym.com/mcp
+  limit: 120
+  window: 1 minute
+  window_seconds: 60
+  observed_headers:
+    RateLimit-Policy: 120;w=60
+    RateLimit-Limit: '120'
+    RateLimit-Remaining: '117'
+    RateLimit-Reset: '48'
+  evidence: Observed on an anonymous JSON-RPC initialize call, 2026-09-03.
+  method: probed
+  note: >-
+    The MCP endpoint runs a different limiter to the REST data endpoints — 120 per
+    60s rather than the 100/day/IP keyless quota. This is not documented anywhere
+    on the developer page; it was read off the wire.
+response_headers:
+  standard: draft-ietf-httpapi-ratelimit-headers (RFC 9331 family), lower-cased over HTTP/2
+  emitted_on: every response, not only 429
+  headers:
+  - name: RateLimit-Policy
+    example: 100;w=86400
+    description: The quota and its window in seconds.
+  - name: RateLimit-Limit
+    example: '100'
+    description: The ceiling for the current window.
+  - name: RateLimit-Remaining
+    example: '91'
+    description: Requests left in the current window.
+  - name: RateLimit-Reset
+    example: '86167'
+    description: Seconds until the window resets.
+  - name: Retry-After
+    example: '3600'
+    description: >-
+      Sent on 429 only. Seconds — time to UTC midnight for the daily quota, up to 60
+      for the per-minute limiter. Declared in components.responses.RateLimited.
+exhaustion:
+  status: 429
+  code: rate_limited
+  envelope: '{"error": {"code": "rate_limited", "message": "..."}}'
+  retry_signal: Retry-After (seconds)
+notes:
+- >-
+  A newly created key, or an upgrade to pro, can take up to 5 minutes to be visible
+  to every worker — so an agent should not treat the first post-upgrade 429 as final.
+- >-
+  The RapidAPI listing fronts the same origin and may apply its own quota on top of
+  these limits; the provider says so on the developer page.
+- >-
+  CORS is open (access-control-allow-origin: *) and every /api response carries
+  X-Robots-Tag: noindex, nofollow.

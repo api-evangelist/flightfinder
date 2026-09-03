@@ -1,0 +1,184 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  https://himaxym.com/developers plus info.description and the parameter/response
+  shapes of openapi/flightfinder-aviation-safety-data-openapi.json, confirmed
+  against live responses from https://himaxym.com/api/v1/data on 2026-09-03.
+description: >-
+  Cross-cutting runtime semantics for the FlightFinder Aviation Safety Data API:
+  how it authenticates, pages, signals limits, versions itself, and shapes errors.
+  The defining fact about this API is that its data surface is entirely read-only —
+  which decides idempotency, dry-run and reversibility below.
+base_url: https://himaxym.com/api/v1/data
+api_style: REST over HTTPS, JSON responses, GET-only data surface
+
+authentication:
+  scheme: 'HTTP Bearer (Authorization: Bearer <api key>)'
+  anonymous_tier: true
+  query_string_key: rejected with 401 query_key_unsupported
+  key_types:
+  - API key (data routes)
+  - account JWT (/keys management routes only)
+  docs: https://himaxym.com/developers
+  detail: authentication/flightfinder-authentication.yml
+
+idempotency:
+  supported: false
+  status: na
+  mechanism: null
+  rationale: >-
+    There is no Idempotency-Key header and nothing in the spec or docs mentions one.
+    It is not needed on the data surface: all 14 data operations are GET and
+    therefore inherently idempotent. The only non-GET operations are POST /keys
+    (creates an API key) and DELETE /keys/{id} (revokes one); a replayed POST /keys
+    mints a second key rather than returning the first, so an agent must not retry
+    it blindly.
+  agent_guidance: >-
+    Retry any GET freely. Never blind-retry POST /keys — call GET /keys first to see
+    whether the previous attempt already created the key.
+
+dry_run_mode:
+  supported: false
+  status: na
+  rationale: The data surface is read-only, so every call is already a rehearsal.
+
+reversibility:
+  status: partial
+  read_only_surface: true
+  note: >-
+    14 of 18 operations are GET and change nothing, so reversibility is `na` for the
+    data surface. The key lifecycle is the only write surface and it does have an
+    explicit reversal path.
+  write_operations:
+  - operation: POST /keys
+    path: /keys
+    operation_id: null
+    action: Creates an API key (returned in clear exactly once; only a hash is stored)
+    reversal:
+      exists: true
+      operation: DELETE /keys/{id}
+      description: Revoke one of your own API keys, freeing one of the 5 account slots.
+      window: null
+      window_documented: false
+    grade: documented
+    docs: https://himaxym.com/developers
+    note: >-
+      The reversal path is published and unambiguous, but NO window is stated
+      anywhere — the docs say only that a new key "can take up to 5 minutes to
+      become active everywhere", which is activation propagation, not a revocation
+      deadline. Because the docs do not state a revocation window, none is asserted
+      here. An agent should assume revocation is available for the life of the key
+      and verify with GET /keys.
+    irreversible_side_effect: >-
+      The raw key value is shown exactly once. Losing it is not recoverable — the
+      only remedy is to revoke and mint a new one.
+  - operation: DELETE /keys/{id}
+    path: /keys/{id}
+    operation_id: null
+    action: Revokes an API key
+    reversal:
+      exists: false
+      description: >-
+        Revocation is terminal. No un-revoke, restore or undelete operation exists
+        in the spec or the docs; the remedy is to create a new key, which consumes a
+        fresh slot.
+      window: null
+      window_documented: false
+    grade: irreversible
+  data_operations:
+    status: na
+    reason: All GET; no state is written, so there is nothing to reverse.
+
+pagination:
+  style: cursor
+  applies_to: GET /events
+  request_params:
+    limit: 1-100, default 25
+    cursor: opaque — pass the previous page's next_cursor
+  response_fields:
+    data: array of Occurrence objects
+    next_cursor: string, nullable — null (or absent) means the last page
+  docs: https://himaxym.com/developers
+  note: >-
+    The aggregate hazard endpoints (/wildlife-strikes, /laser-strikes,
+    /drone-sightings) and the reference endpoints return whole documents and are not
+    paginated.
+
+filtering:
+  applies_to: GET /events
+  params:
+  - from (YYYY-MM-DD)
+  - to (YYYY-MM-DD)
+  - country (ISO 3166-1 alpha-2)
+  - type (ICAO aircraft type designator, e.g. B738)
+  - family (aircraft family slug, e.g. boeing-737)
+  - operator (substring match)
+  - fatal (enum "1")
+  combinable: true
+
+field_expansion:
+  supported: false
+  note: >-
+    GET /events/{id} returns a richer Occurrence (adds narratives[] refs) than the
+    list projection; there is no expand[] mechanism.
+
+sparse_fieldsets:
+  supported: false
+
+metadata:
+  supported: false
+
+request_tracing:
+  request_id_header: null
+  note: >-
+    No provider request id is returned. Responses carry Cloudflare's cf-ray, which
+    identifies the edge request but is not a documented support handle.
+
+versioning:
+  scheme: URI path version
+  current: v1
+  mechanism: /api/v1/data — the major version is in the path
+  version_header: null
+  spec_version: 1.0.0 (info.version)
+  detail: lifecycle/flightfinder-lifecycle.yml
+
+error_envelope:
+  media_type: application/json
+  problem_json: false
+  shape: '{"error": {"code": "<machine code>", "message": "<human message>"}}'
+  exception: >-
+    The /keys management routes use {"success": false, "message": "..."} instead —
+    documented in the spec itself.
+  detail: errors/flightfinder-problem-types.yml
+
+rate_limit_signaling:
+  headers:
+  - RateLimit-Policy
+  - RateLimit-Limit
+  - RateLimit-Remaining
+  - RateLimit-Reset
+  - Retry-After (429 only)
+  emitted_on: every response
+  exhaustion_status: 429
+  detail: rate-limits/flightfinder-rate-limits.yml
+
+cors:
+  enabled: true
+  header: 'access-control-allow-origin: *'
+  note: Browser clients can call the keyless tier directly.
+
+content_negotiation:
+  formats:
+  - application/json
+  note: JSON only; no XML, CSV or ndjson negotiation on the v1 API.
+
+attribution_obligation:
+  required: true
+  description: >-
+    A hard runtime convention, not a legal footnote: every record carries source,
+    attribution, license and a deep link, and anything displayed or republished must
+    show visible attribution linking the original source. Where narrative_text is an
+    excerpt, the full text must be fetched from the linked source under that
+    source's own licence rather than reconstructed.
+  per_source_policy: GET /sources returns the licence and narrative policy per source
+  docs: https://himaxym.com/developers

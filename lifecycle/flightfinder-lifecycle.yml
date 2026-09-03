@@ -1,0 +1,98 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  https://himaxym.com/developers, https://himaxym.com/editorial-standards,
+  https://himaxym.com/about, the /.well-known/api-catalog linkset, and
+  openapi/flightfinder-aviation-safety-data-openapi.json. All fetched 2026-09-03.
+description: >-
+  How the FlightFinder Aviation Safety Data API is versioned, how its data is
+  refreshed and corrected, and what it does NOT publish. The editorial lifecycle
+  (source refresh, correction policy, human review) is unusually well documented for
+  a provider this size; the API lifecycle (deprecation, SLA, status, changelog) is
+  not documented at all.
+versioning:
+  scheme: URI path
+  current_version: v1
+  base: https://himaxym.com/api/v1/data
+  spec_version: 1.0.0
+  version_header: null
+  policy_published: false
+  note: >-
+    The major version lives in the path. No versioning policy, no version negotiation
+    header and no statement of what constitutes a breaking change is published.
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  rfc8594: false
+  deprecated_operations: []
+  note: >-
+    No RFC 8594 Sunset/Deprecation headers were observed on any live response, no
+    operation in the spec carries `deprecated: true`, and no deprecation policy page
+    exists. The only forward-looking removal statement found anywhere is the 401
+    message on ?api_key=, which says query-string keys are "no longer supported" —
+    evidence that a breaking change has already been shipped without a published
+    policy.
+status_page:
+  published: false
+  health_endpoint: https://himaxym.com/api/v1/data/ping
+  health_response: '{"ok":true}'
+  declared_in: >-
+    /.well-known/api-catalog — the RFC 9727 linkset declares
+    status -> https://himaxym.com/api/v1/data/ping
+  note: >-
+    There is a machine health check and the provider correctly declares it under the
+    IANA `status` link relation, but there is NO incident/status page (no
+    status.himaxym.com, /status returns 404), so no StatusPage pointer is emitted.
+sla:
+  published: false
+  uptime_target: null
+  support_response: >-
+    "aims to respond within a few business days" for general enquiries
+    (https://himaxym.com/contact) — an editorial commitment, not an API SLA.
+  terms: >-
+    "The API is read-only and provided as-is; abusive traffic and key-pooling get
+    keys revoked." (https://himaxym.com/developers)
+changelog:
+  published: false
+  note: /changelog returns 404; no dated release notes were found on any host.
+data_lifecycle:
+  note: >-
+    Distinct from the API lifecycle and much better documented — this is the refresh
+    cadence of the corpus behind the API.
+  source: https://himaxym.com/about
+  refresh:
+  - source: Aviation Safety Network + B3A (via Wikidata)
+    covers: Worldwide accidents and hull losses
+    cadence: weekly
+  - source: NTSB CAROL
+    covers: U.S. official investigations
+    cadence: daily
+  - source: Turbulence model (GFS winds -> Ellrod index)
+    covers: En-route turbulence forecast
+    cadence: every 6 hours
+  - source: FAA and other national authorities
+    covers: Hazard registers, airworthiness directives, regional records
+    cadence: varies by authority
+  correction_policy:
+    url: https://himaxym.com/contact
+    process: >-
+      Corrections are verified against the upstream authority before the database is
+      changed; FlightFinder does not alter dates, aircraft types, operators or
+      casualty figures in conflict with the official record.
+  editorial_review:
+    url: https://himaxym.com/editorial-standards
+    process: >-
+      Machine-generated summaries are constrained to source records and reviewed
+      before being marked indexable; where a summary conflicts with the official
+      report, the official report wins and the summary is corrected or suppressed.
+  ai_content_policy: https://himaxym.com/ai-content-policy
+findings:
+- >-
+  The site's own schema.org Organization JSON-LD lists
+  https://github.com/disclaimer8/flightfinder under sameAs, but that repository
+  returns HTTP 404 (the user account disclaimer8 exists; the repo does not or is
+  private). No GitHubOrganization pointer is emitted for that reason.
+- >-
+  A breaking auth change (?api_key= removal) shipped with no deprecation policy,
+  no Sunset header and no changelog entry — the only trace is the error message.

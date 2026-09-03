@@ -1,0 +1,86 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  https://himaxym.com/developers (Authentication + "Get an API key" sections) and
+  info.description / components.securitySchemes of
+  https://himaxym.com/api/v1/data/openapi.json. Live 401 bodies were observed on
+  2026-09-03 against https://himaxym.com/api/v1/data/ping and /events.
+docs: https://himaxym.com/developers
+description: >-
+  FlightFinder's Aviation Safety Data API is bearer-token only, with a documented
+  keyless tier that answers every GET data endpoint with NO Authorization header at
+  all. There is no OAuth, no OIDC, no mTLS and no query-string key: the API rejects
+  ?api_key= outright. Key issuance is account-bound and happens over the same API.
+summary:
+  types:
+  - http
+  - none
+  primary: http bearer
+  anonymous_tier: true
+schemes:
+- name: bearerKey
+  type: http
+  scheme: bearer
+  in: header
+  header: Authorization
+  description: >-
+    API key as a bearer token. On the /keys management routes this is the account
+    JWT instead — the API key itself cannot create or revoke keys.
+  applies_to: all operations (declared as the top-level security requirement)
+  sources:
+  - openapi/flightfinder-aviation-safety-data-openapi.json
+  - https://himaxym.com/developers
+- name: keyless
+  type: none
+  description: >-
+    Documented anonymous tier. Every GET data endpoint answers with no Authorization
+    header at 100 requests/day/IP. Confirmed live 2026-09-03:
+    `curl 'https://himaxym.com/api/v1/data/events?limit=1'` returned HTTP 200 with
+    real records and no credential.
+  applies_to: all GET data endpoints
+  sources:
+  - https://himaxym.com/developers
+token_types:
+- name: API key
+  format: opaque bearer token
+  issued_by: POST /keys
+  issued_to: a himaxym.com account
+  shown: once — only a hash is stored server-side
+  max_active: 5 per account
+  revoke: DELETE /keys/{id}
+  propagation: a new key or a pro upgrade can take up to 5 minutes to reach every worker
+- name: account JWT
+  format: JWT
+  used_for: the /keys management routes only (POST /keys, GET /keys, DELETE /keys/{id})
+  note: >-
+    An API key cannot create or revoke keys — the /keys routes require the account
+    token, and they return a different error envelope
+    ({"success":false,"message":"Unauthorized"}) than the data routes.
+prohibited:
+  query_string_key:
+    supported: false
+    status: 401
+    code: query_key_unsupported
+    reason_published: >-
+      "query strings end up in access logs and browser history" (OpenAPI
+      info.description and the /developers Authentication note)
+    observed: >-
+      GET https://himaxym.com/api/v1/data/events?limit=1&api_key=foo returned 401
+      {"error":{"code":"query_key_unsupported", ...}} on 2026-09-03
+oauth2: false
+openid_connect: false
+mutual_tls: false
+scopes:
+  supported: false
+  note: >-
+    No scope surface exists. Access is tiered by plan (keyless / free key / pro key),
+    not by scope, so scopes/ is intentionally absent rather than empty.
+errors:
+- code: bad_key
+  status: 401
+  message: unknown or revoked API key
+  observed: true
+- code: query_key_unsupported
+  status: 401
+  message: 'passing the key as ?api_key= is no longer supported — send it as an Authorization: Bearer header'
+  observed: true

@@ -1,0 +1,121 @@
+generated: '2026-09-03'
+method: derived
+source: >-
+  Derived by binding the live tools/list manifest
+  (mcp/flightfinder-mcp-tools.json, probed 2026-09-03 from
+  https://himaxym.com/mcp) to the operations in
+  openapi/flightfinder-aviation-safety-data-openapi.json.
+description: >-
+  Both FlightFinder surfaces project the same corpus, but they are not identical:
+  the MCP server exposes only the read side and collapses the hazard facet routes
+  into one tool each, while the REST API additionally carries the whole key
+  lifecycle, which has no tool at all.
+surfaces:
+  openapi:
+    file: openapi/flightfinder-aviation-safety-data-openapi.json
+    url: https://himaxym.com/api/v1/data/openapi.json
+    version: 3.0.3
+    base_url: https://himaxym.com/api/v1/data
+    paths: 17
+    operations: 18
+    gated: false
+    note: >-
+      The spec declares NO operationId on any operation, so every binding below is
+      keyed on METHOD + path — the only stable identifier the contract provides.
+      overlays/flightfinder-aviation-safety-data-overlay.yaml proposes operationIds.
+  mcp:
+    url: https://himaxym.com/mcp
+    gated: false
+    tools: 9
+    protocol_version: '2025-06-18'
+  graphql:
+    present: false
+binding_key: method+path
+crosswalk:
+- tool: search_accidents
+  category: occurrences
+  rest:
+  - GET /events
+  binding: rest
+  confidence: high
+  note: >-
+    Parameter-for-parameter match (family, country, type, operator, from, to, fatal,
+    limit, cursor) except that the tool types `fatal` as a boolean while the REST
+    parameter is the string enum ["1"].
+- tool: get_accident
+  category: occurrences
+  rest:
+  - GET /events/{id}
+  binding: rest
+  confidence: high
+- tool: get_narrative
+  category: narratives
+  rest:
+  - GET /narratives/{source}/{id}
+  binding: rest
+  confidence: high
+  note: The tool URL-encodes the authority case id for the caller; the REST route does not.
+- tool: aircraft_safety
+  category: analytics
+  rest:
+  - GET /aircraft/{family}/safety
+  binding: rest
+  confidence: high
+- tool: list_sources
+  category: reference
+  rest:
+  - GET /sources
+  binding: rest
+  confidence: high
+- tool: airport_reference
+  category: reference
+  rest:
+  - GET /airports/{ident}
+  binding: rest
+  confidence: high
+- tool: wildlife_strikes
+  category: hazards
+  rest:
+  - GET /wildlife-strikes
+  - GET /wildlife-strikes/airport/{slug}
+  - GET /wildlife-strikes/species/{slug}
+  binding: rest
+  confidence: high
+  note: >-
+    One tool fans out to three REST routes — the optional airport / species
+    arguments select the facet route; with no arguments it is the aggregate route.
+- tool: laser_incidents
+  category: hazards
+  rest:
+  - GET /laser-strikes
+  - GET /laser-strikes/state/{slug}
+  - GET /laser-strikes/airport/{slug}
+  binding: rest
+  confidence: high
+  note: Same fan-out shape; state / airport select the facet route.
+- tool: drone_sightings
+  category: hazards
+  rest:
+  - GET /drone-sightings
+  - GET /drone-sightings/state/{slug}
+  binding: rest
+  confidence: high
+  note: Same fan-out shape; state selects the facet route.
+mcp_only: []
+rest_only:
+- operation: POST /keys
+  reason: Key issuance is account-JWT authenticated and deliberately not agent-callable.
+- operation: GET /keys
+  reason: Key metadata listing — account-JWT only, no tool.
+- operation: DELETE /keys/{id}
+  reason: Key revocation — account-JWT only, no tool.
+- operation: GET /ping
+  reason: Connectivity / key check; no agent-facing equivalent is needed on an anonymous server.
+coverage:
+  mcp_tools: 9
+  mcp_tools_bound_to_rest: 9
+  mcp_only_tools: 0
+  rest_operations: 18
+  rest_operations_covered_by_a_tool: 14
+  rest_only_operations: 4
+  rest_coverage_pct: 78

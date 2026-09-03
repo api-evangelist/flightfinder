@@ -1,0 +1,182 @@
+generated: '2026-09-03'
+method: derived
+source: >-
+  openapi/flightfinder-aviation-safety-data-openapi.json — components.schemas
+  ($ref links and id-reference fields) plus the response shapes of the 18
+  operations. Enriched from GET https://himaxym.com/api/v1/data/sources
+  (fetched 2026-09-03) for the source-code domain.
+description: >-
+  The corpus is a two-level graph: an Occurrence (the deduplicated event) fans out
+  to one SourceLink per contributing authority, and each of those resolves to a
+  Narrative addressed by (source code, the authority's own case id). Aircraft
+  family, ICAO type, country and airport are string-keyed dimensions rather than
+  first-class objects — there is no Aircraft or Airport schema in the contract.
+entities:
+- name: Occurrence
+  schema: '#/components/schemas/Occurrence'
+  description: An aviation occurrence, deduplicated across every authority that reported it.
+  identifier: id
+  id_format: opaque string (FlightFinder occurrence id)
+  operations:
+  - GET /events
+  - GET /events/{id}
+  fields:
+  - id
+  - occurrence_type
+  - event_date
+  - severity
+  - country_iso
+  - type_icao
+  - family_slug
+  - registration
+  - operator
+  - fatalities_total
+  - sources
+  note: >-
+    The list projection and the detail projection differ — GET /events/{id} adds
+    narratives[] refs. The contract documents the difference in prose
+    ("The detail endpoint adds narratives[] refs") but does not model it as a
+    separate schema.
+- name: SourceLink
+  schema: '#/components/schemas/SourceLink'
+  description: One authority's attribution for an occurrence, with its licence and deep link.
+  identifier: source
+  fields:
+  - source
+  - attribution
+  - license
+  - url
+- name: Narrative
+  schema: '#/components/schemas/Narrative'
+  description: >-
+    An investigation narrative from one authority. Full text for open-licensed
+    sources; a ~300-char excerpt plus source_url otherwise.
+  identifier: (source, id)
+  id_format: source code + the authority's own case id (e.g. atsb / AO-2024-001)
+  operations:
+  - GET /narratives/{source}/{id}
+  fields:
+  - source
+  - id
+  - slug
+  - policy
+  - narrative_text
+  - probable_cause
+  - phase_of_flight
+  - facts
+  - attribution
+  - license
+  - source_url
+  - article
+  embedded:
+  - name: article
+    description: >-
+      FlightFinder's own derived write-up. full_text and license are Pro-tier only;
+      the licence is no-public-republication.
+    fields: [title, excerpt, canonical_url, full_text, license, license_note]
+- name: Source
+  schema: null
+  description: >-
+    A contributing authority. Not modelled as a component schema — GET /sources
+    returns it inline as {code, name, license, homepage, narrative count, policy}.
+  identifier: code
+  id_format: lowercase agency slug (ntsb, atsb, aaib, bea, mak, baaa, ...)
+  cardinality: 130 sources as served on 2026-09-03
+  operations:
+  - GET /sources
+  note: >-
+    A modelling gap worth reporting upstream: the source registry is the join key of
+    the whole graph (Narrative.source, SourceLink.source) and it has no schema.
+- name: Error
+  schema: '#/components/schemas/Error'
+  description: The data-endpoint error envelope.
+  fields: [error.code, error.message]
+relationships:
+- from: Occurrence
+  to: SourceLink
+  type: has_many
+  via: sources[]
+  binding: '$ref'
+  evidence: components.schemas.Occurrence.properties.sources.items.$ref -> SourceLink
+- from: SourceLink
+  to: Source
+  type: belongs_to
+  via: source (source code)
+  binding: id-reference
+  evidence: SourceLink.source matches the code field returned by GET /sources
+- from: Occurrence
+  to: Narrative
+  type: has_many
+  via: narratives[] refs on the detail projection, addressed as (source, id)
+  binding: id-reference
+  evidence: >-
+    components.schemas.Occurrence.description — "The detail endpoint adds
+    narratives[] refs"; GET /narratives/{source}/{id} resolves them.
+- from: Narrative
+  to: Source
+  type: belongs_to
+  via: source
+  binding: id-reference
+- from: Occurrence
+  to: AircraftFamily
+  type: belongs_to
+  via: family_slug
+  binding: id-reference
+  evidence: >-
+    Occurrence.family_slug feeds GET /aircraft/{family}/safety and the family filter
+    on GET /events. AircraftFamily has no schema — it is a slug dimension only.
+- from: Occurrence
+  to: AircraftType
+  type: belongs_to
+  via: type_icao (ICAO Doc 8643 designator)
+  binding: id-reference
+- from: Occurrence
+  to: Country
+  type: belongs_to
+  via: country_iso (ISO 3166-1 alpha-2)
+  binding: id-reference
+dimensions_note: >-
+  These are string-keyed facets the API filters and aggregates on. None has a
+  component schema; each is a path or query parameter.
+dimensions:
+- name: aircraft_family
+  key: slug
+  example: boeing-737
+  used_by: ['GET /events', 'GET /aircraft/{family}/safety']
+- name: aircraft_type
+  key: ICAO designator
+  example: B738
+  used_by: ['GET /events']
+- name: country
+  key: ISO 3166-1 alpha-2
+  example: US
+  used_by: ['GET /events']
+- name: airport
+  key: ICAO ident or IATA code
+  example: KDEN
+  used_by: ['GET /airports/{ident}']
+- name: airport_slug
+  key: lowercase slug
+  example: kden
+  used_by: ['GET /wildlife-strikes/airport/{slug}', 'GET /laser-strikes/airport/{slug}']
+- name: species_slug
+  key: lowercase hyphenated slug
+  example: mourning-dove
+  used_by: ['GET /wildlife-strikes/species/{slug}']
+- name: us_state_slug
+  key: lowercase hyphenated slug
+  used_by: ['GET /laser-strikes/state/{slug}', 'GET /drone-sightings/state/{slug}']
+aggregate_surfaces:
+  note: >-
+    The hazard endpoints return aggregate documents (totals, yearly series, leading
+    facets) rather than entities. Their response bodies are declared as untyped
+    objects in the spec, which is the largest single schema gap in the contract.
+  operations:
+  - GET /wildlife-strikes
+  - GET /laser-strikes
+  - GET /drone-sightings
+  - GET /aircraft/{family}/safety
+gaps:
+- No schema for the Source registry, the aircraft-family safety aggregate, or any hazard aggregate.
+- No operationId on any operation, so no stable machine handle exists for an entity's operations.
+- No examples on any response other than the Error code example.

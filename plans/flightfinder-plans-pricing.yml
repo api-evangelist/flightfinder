@@ -1,0 +1,105 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  https://himaxym.com/developers (the "Rate limits" tier table and the "Get an API
+  key" section) for the API tiers, and https://himaxym.com/pricing for the consumer
+  FlightFinder Pro subscription. Both fetched 2026-09-03.
+docs: https://himaxym.com/developers
+description: >-
+  FlightFinder sells two distinct things and it is important not to conflate them.
+  The API has its own three tiers (keyless / free key / Pro API at $49 per month),
+  published on the developer page. The consumer website has a separate FlightFinder
+  Pro subscription ($4.99/mo, $39/yr, $99 lifetime) that unlocks extended NTSB
+  history in the web UI and is NOT the API plan.
+plan_count: 3
+currency: USD
+plans:
+- name: Keyless
+  audience: api
+  price: 0
+  currency: USD
+  billing_period: null
+  signup_required: false
+  included:
+    requests_per_day: 100
+    scope: per IP
+    endpoints: every GET data endpoint
+  overage: none — requests beyond the quota return 429 with Retry-After
+  limits:
+  - 100 requests/day/IP
+  narrative_access: >-
+    full text for open-licensed sources, ~300-char excerpt plus a source_url deep
+    link otherwise
+  note: >-
+    No account, no key, no Authorization header. Confirmed live 2026-09-03 — a
+    keyless GET /events returned real records.
+- name: Free key
+  audience: api
+  price: 0
+  currency: USD
+  billing_period: null
+  signup_required: true
+  included:
+    requests_per_day: 1000
+    requests_per_minute: 60
+    scope: per key
+    keys_per_account: 5
+  overage: none — 429 with Retry-After
+  limits:
+  - 1,000 requests/day
+  - 60 requests/minute
+  narrative_access: same source-licence policy as the keyless tier
+- name: Pro (API)
+  audience: api
+  price: 49
+  currency: USD
+  billing_period: month
+  signup_required: true
+  included:
+    requests_per_day: 20000
+    requests_per_minute: 60
+    scope: per key
+  overage: none — 429 with Retry-After
+  limits:
+  - 20,000 requests/day
+  - 60 requests/minute
+  entitlements:
+  - full-text access to FlightFinder-derived narrative articles
+  license_terms: >-
+    No-public-republication: internal use, applications and research permitted;
+    open-web republication forbidden; a visible attribution link to the canonical
+    FlightFinder page required.
+  activation: propagates to existing keys within about 5 minutes
+related_consumer_plans:
+  note: >-
+    Recorded for completeness — these are website subscriptions, NOT API plans. They
+    unlock 1- and 3-year US-reported (NTSB) incident breakdowns beyond the free
+    90-day window in the web UI.
+  source: https://himaxym.com/pricing
+  plans:
+  - name: FlightFinder Pro Monthly
+    price: 4.99
+    currency: USD
+    billing_period: month
+    trial_days: 7
+  - name: FlightFinder Pro Annual
+    price: 39
+    currency: USD
+    billing_period: year
+    trial_days: 7
+  - name: FlightFinder Pro Lifetime
+    price: 99
+    currency: USD
+    billing_period: one-time
+    seats_limited: 500
+enterprise:
+  contact: support@himaxym.com
+  note: >-
+    "Commercial or bulk access: contact support@himaxym.com" (llms.txt). Media and
+    data-licensing enquiries use the same address (/contact). No published
+    enterprise price.
+free_access_policy: >-
+  The provider states on /about that it does not paywall the safety record: "Every
+  occurrence, every recommendation, and the score methodology are open to everyone.
+  FlightFinder Pro pays for volume, history and export — never for access to the
+  record."

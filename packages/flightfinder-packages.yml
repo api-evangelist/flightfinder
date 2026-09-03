@@ -1,0 +1,61 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  Registry searches on 2026-09-03 (registry.npmjs.org search for "flightfinder"
+  and "himaxym", pypi.org/pypi/flightfinder/json, GitHub code search
+  api.github.com/search/repositories?q=himaxym) plus the "Run it from your tools"
+  section of https://himaxym.com/developers.
+package_count: 0
+official_sdk_count: 0
+packages: []
+finding: >-
+  FlightFinder publishes NO first-party client library in any registry. npm search
+  returned 0 objects for both "flightfinder" and "himaxym"; PyPI has no
+  "flightfinder" project; GitHub has no repository or organisation matching
+  "himaxym". The provider does not point at an SDK anywhere in its developer page —
+  its published integration story is raw curl plus two third-party consumption
+  surfaces (below), both generated from the OpenAPI.
+distribution_surfaces:
+- kind: postman-collection
+  name: FlightFinder Aviation Safety Data API
+  url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  official: true
+  registry: null
+  version: null
+  published: null
+  note: >-
+    First-party published Postman documenter collection, built from the OpenAPI and
+    shipped with No Auth so the keyless tier answers on the first Send. Postman
+    documenter exposes no version or publish-date metadata endpoint, so version and
+    published are recorded null — checked, nothing to record.
+- kind: api-marketplace
+  name: Aviation Safety Data (RapidAPI)
+  url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+  official: true
+  registry: rapidapi
+  version: null
+  published: null
+  note: >-
+    First-party RapidAPI listing linked from https://himaxym.com/developers. The
+    gateway carries the key for the consumer, so callers never create a FlightFinder
+    key. RapidAPI publishes no unauthenticated version/date metadata endpoint for a
+    listing, so both fields are null — checked, nothing to record. The provider warns
+    that RapidAPI may apply its own quota on top of the origin limits.
+- kind: dataset
+  name: FlightFinder wildlife-strike aggregates (Zenodo)
+  url: https://doi.org/10.5281/zenodo.21347859
+  official: true
+  registry: zenodo
+  version: null
+  published: null
+  note: >-
+    Concept DOI for versioned CC BY wildlife-strike aggregates, declared in the
+    provider's own llms.txt. doi.org returned HTTP 403 to this crawler on
+    2026-09-03 (bot challenge, not a dead link), so the record version and its
+    publication date could not be read — recorded null rather than guessed.
+mcp_distribution:
+  stdio_package: null
+  note: >-
+    The MCP server is remote-only (https://himaxym.com/mcp). There is no npx/pip
+    installable MCP package, which is why deployment.mode in
+    mcp/flightfinder-mcp.yml is `remote` and not `both`.

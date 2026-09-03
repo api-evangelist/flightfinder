@@ -1,0 +1,48 @@
+generated: '2026-09-03'
+method: generated
+source: >-
+  Authored from openapi/flightfinder-aviation-safety-data-openapi.json,
+  mcp/flightfinder-mcp-tools.json (probed 2026-09-03),
+  conventions/flightfinder-conventions.yml and
+  errors/flightfinder-problem-types.yml. The provider publishes no AGENTS.md or
+  skills of its own — https://himaxym.com/llms.txt is a crawl-guidance manifest for
+  its HTML pages, not an agent skill.
+skills:
+- name: flightfinder-aircraft-safety-record
+  file: skills/flightfinder-aircraft-safety-record.md
+  description: >-
+    Build a defensible safety record for one aircraft family, with per-source
+    attribution and licence-correct narrative handling.
+  operations:
+  - GET /aircraft/{family}/safety
+  - GET /events
+  - GET /events/{id}
+  - GET /narratives/{source}/{id}
+  - GET /sources
+  mcp_tools: [aircraft_safety, search_accidents, get_accident, get_narrative, list_sources]
+- name: flightfinder-hazard-briefing
+  file: skills/flightfinder-hazard-briefing.md
+  description: >-
+    Produce a wildlife-strike, laser-incident or drone-sighting briefing for a US
+    airport, state or species from the FAA-derived public-domain datasets.
+  operations:
+  - GET /wildlife-strikes
+  - GET /wildlife-strikes/airport/{slug}
+  - GET /wildlife-strikes/species/{slug}
+  - GET /laser-strikes
+  - GET /laser-strikes/state/{slug}
+  - GET /laser-strikes/airport/{slug}
+  - GET /drone-sightings
+  - GET /drone-sightings/state/{slug}
+  - GET /airports/{ident}
+  mcp_tools: [wildlife_strikes, laser_incidents, drone_sightings, airport_reference]
+note: >-
+  Operations are addressed as METHOD + path because the served OpenAPI declares no
+  operationId on any of its 18 operations. Proposed operationIds live in
+  overlays/flightfinder-aviation-safety-data-overlay.yaml and are explicitly marked
+  as ours, not the provider's.
+not_covered:
+  - >-
+    The /keys lifecycle (POST /keys, GET /keys, DELETE /keys/{id}) has no skill. It
+    requires an interactive himaxym.com account JWT, POST /keys is not replay-safe,
+    and revocation is irreversible — a human should hold that flow.

@@ -1,0 +1,79 @@
+generated: '2026-09-03'
+method: probed
+source: >-
+  Direct HTTPS probes of the named /.well-known/ path list against the single host
+  behind both apis.yml baseURL and the OpenAPI servers[] block (himaxym.com),
+  2026-09-03.
+hit_count: 1
+path_echo_control: passed
+soft_404_control:
+  path: /.well-known/flightfinder-negative-control-7f3ab91c.json
+  status: 404
+  bytes: 68106
+  note: >-
+    Unknown /.well-known/ paths return HTTP 404 carrying the SPA shell, so this host
+    is NOT a catch-all 200 responder. The one 200 recorded below is a real document
+    with its own content-type (application/linkset+json), not the shell.
+hosts:
+- host: https://himaxym.com
+  documents:
+  - path: /.well-known/api-catalog
+    status: 200
+    content_type: application/linkset+json
+    file: flightfinder-api-catalog.json
+    note: >-
+      RFC 9727 linkset. Anchors https://himaxym.com/api/v1/data and declares
+      service-desc -> the OpenAPI, service-doc -> the developer portal, and
+      status -> GET /api/v1/data/ping.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 520
+    note: Cloudflare 520 (origin returned nothing usable) rather than a document.
+- host: https://tiles.himaxym.com
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 404
+    note: Map-tile CDN host referenced from the site; carries no discovery surface.
+content_signals:
+  source: https://himaxym.com/robots.txt
+  file: flightfinder-robots.txt
+  status: 200
+  header: 'Content-Signal: search=yes, ai-input=yes, ai-train=yes'
+  standard: contentsignals.org (Cloudflare Content Signals Policy)
+  declared:
+    search: yes
+    ai-input: yes
+    ai-train: yes
+  note: >-
+    A live, machine-readable AI usage-preference declaration served in robots.txt.
+    The same file names GPTBot, ClaudeBot, PerplexityBot, CCBot, Google-Extended and
+    a dozen other AI agents explicitly, allows /api/v1/ and the bulk accident
+    download for them, and disallows the SPA widget rails. This is a real consent
+    signal, published by the provider, not derived by us.
+absent:
+- security.txt (RFC 9116) — not served on any probed host
+- an /apis.json or /.well-known/apis.json index
+- OAuth/OIDC discovery documents (the API does not use OAuth)

@@ -1,0 +1,141 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  Derived from the 4xx/5xx responses and components.responses of
+  openapi/flightfinder-aviation-safety-data-openapi.json, enriched from the
+  "Data endpoints share one error shape" note on https://himaxym.com/developers,
+  and confirmed by live unauthenticated calls against
+  https://himaxym.com/api/v1/data on 2026-09-03.
+format: custom-json
+rfc9457: false
+description: >-
+  FlightFinder returns a nested JSON error envelope, not application/problem+json.
+  There are TWO envelopes: the data endpoints use {"error":{"code","message"}} and
+  the /keys management routes use {"success":false,"message":"..."} — the OpenAPI
+  says so explicitly in components.responses.AccountAuthRequired, which is unusually
+  honest for a spec and worth preserving.
+envelopes:
+- name: data
+  media_type: application/json
+  shape: '{"error": {"code": "<machine code>", "message": "<human message>"}}'
+  applies_to: >-
+    every /events, /narratives, /aircraft, /wildlife-strikes, /laser-strikes,
+    /drone-sightings, /airports, /sources and /ping route
+  schema_ref: '#/components/schemas/Error'
+- name: account
+  media_type: application/json
+  shape: '{"success": false, "message": "Unauthorized"}'
+  applies_to: POST /keys, GET /keys, DELETE /keys/{id}
+  schema_ref: '#/components/responses/AccountAuthRequired'
+problem_types:
+- code: bad_key
+  status: 401
+  title: Unknown or revoked API key
+  detail: The bearer token presented is not a live FlightFinder API key.
+  remediation: >-
+    Create a key with POST /keys using your account JWT, or fall back to the keyless
+    tier by sending no Authorization header at all.
+  evidence: >-
+    Observed 2026-09-03: GET /api/v1/data/ping with `Authorization: Bearer
+    notarealkey` returned {"error":{"code":"bad_key","message":"unknown or revoked
+    API key"}}.
+  method: probed
+- code: query_key_unsupported
+  status: 401
+  title: API key passed in the query string
+  detail: >-
+    The key was sent as ?api_key=. FlightFinder rejects this because query strings
+    end up in access logs and browser history.
+  remediation: 'Send the key as an Authorization: Bearer header.'
+  evidence: >-
+    Observed 2026-09-03: GET /api/v1/data/events?limit=1&api_key=foo returned 401
+    with this code.
+  method: probed
+- code: not_found
+  status: 404
+  title: No record matches
+  detail: The requested occurrence, narrative, aircraft family, airport or facet does not exist.
+  remediation: >-
+    Check the identifier. Airports take an ICAO ident or IATA code; narratives take
+    a source code from GET /sources plus the authority's own case id; families take
+    a slug such as boeing-737.
+  evidence: >-
+    Observed 2026-09-03: GET /api/v1/data/airports/ZZZZ returned
+    {"error":{"code":"not_found","message":"no airport for identifier 'ZZZZ'"}}.
+  method: probed
+  operations:
+  - GET /events/{id}
+  - GET /narratives/{source}/{id}
+  - GET /aircraft/{family}/safety
+  - GET /wildlife-strikes/airport/{slug}
+  - GET /wildlife-strikes/species/{slug}
+  - GET /laser-strikes/state/{slug}
+  - GET /laser-strikes/airport/{slug}
+  - GET /drone-sightings/state/{slug}
+  - GET /airports/{ident}
+  - DELETE /keys/{id}
+- code: rate_limited
+  status: 429
+  title: Rate limit exceeded
+  detail: >-
+    The daily quota (100/day/IP keyless, 1,000/day free key, 20,000/day pro key) or
+    the 60/minute per-key limiter was exhausted.
+  remediation: >-
+    Honour the Retry-After header (seconds). For the daily quota that is the time to
+    UTC midnight; for the per-minute limiter it is at most 60 seconds.
+  response_headers:
+  - Retry-After
+  - RateLimit-Policy
+  - RateLimit-Limit
+  - RateLimit-Remaining
+  - RateLimit-Reset
+  evidence: >-
+    The example value in components.schemas.Error is literally "rate_limited", and
+    components.responses.RateLimited declares the Retry-After header. Live 200
+    responses carry RateLimit-Policy/Limit/Remaining/Reset (see
+    rate-limits/flightfinder-rate-limits.yml).
+  method: derived
+  applies_to: every operation in the spec (429 is declared on all 18)
+- code: bad_request
+  status: 400
+  title: Invalid request body or parameters
+  detail: The request body or a query parameter failed validation.
+  remediation: Check limit (1-100), the date format (YYYY-MM-DD) and the POST /keys body.
+  evidence: components.responses.BadRequest, declared on POST /keys and DELETE /keys/{id}.
+  method: derived
+  operations:
+  - POST /keys
+  - DELETE /keys/{id}
+- code: conflict
+  status: 409
+  title: Key limit reached
+  detail: The account already holds the maximum of 5 active API keys.
+  remediation: Revoke one with DELETE /keys/{id} to free a slot, then retry.
+  evidence: >-
+    POST /keys declares a 409; the /developers page and info.description both state
+    the 5-active-key ceiling and the DELETE remedy. The 409 body was not probed —
+    it requires an authenticated account at the key ceiling.
+  method: derived
+  operations:
+  - POST /keys
+- code: unauthorized
+  status: 401
+  title: Account authentication required (account envelope)
+  detail: >-
+    A /keys management route was called without the himaxym.com account JWT. An API
+    key cannot create or revoke keys.
+  remediation: 'Send the account JWT as Authorization: Bearer on the /keys routes.'
+  envelope: account
+  evidence: components.responses.AccountAuthRequired
+  method: derived
+  operations:
+  - POST /keys
+  - GET /keys
+  - DELETE /keys/{id}
+gaps:
+- >-
+  No 5xx response is declared anywhere in the spec, so an agent has no documented
+  contract for a server-side failure.
+- >-
+  The Error schema declares no enum of codes, so the code list above is assembled
+  from probes plus prose rather than from the contract.

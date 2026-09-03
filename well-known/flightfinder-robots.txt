@@ -1,0 +1,121 @@
+User-agent: *
+Allow: /
+
+# Cloudflare's email-protection stub (/cdn-cgi/l/email-protection) exists only
+# at the CF edge — the origin 404s it — and it landed in GSC's "Not found"
+# cohort (2026-08-01 export). Cloudflare's own guidance is to disallow /cdn-cgi/.
+Disallow: /cdn-cgi/
+
+# Content usage signals for AI crawlers (contentsignals.org / Cloudflare).
+# This is public aviation-safety reference data compiled from official agencies;
+# we WANT it surfaced. Declared preferences: allow classic search indexing,
+# allow use as grounding input for AI answers (citation), and allow use as
+# training data. A more restrictive future stance would set ai-train=no.
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
+
+# /api/ is deliberately NOT disallowed for the default user-agent (Googlebot):
+# Googlebot's Web Rendering Service honours robots.txt for fetch/XHR, so a
+# blanket Disallow: /api/ makes every client-side /api fetch fail during
+# Google's render — pages then index with their error/empty states
+# (GSC-confirmed on the homepage search bar, 2026-07-27). Google's guidance is
+# to keep render-critical resources fetchable. Keeping API JSON out of the
+# classic web index is handled by an `X-Robots-Tag: noindex` header on every
+# /api response instead (see server/src/index.js).
+
+# ── AI crawlers: prefer HTML for citation ─────────────────────────────────
+# Cloudflare AI crawl analytics (2026-08) showed GPTBot/ClaudeBot/etc. burning
+# budget on SPA data rails (/api/safety/articles, /api/flights/*, /api/map/*,
+# /api/routes/*/prices) while citable HTML hubs (/accidents/*, /aircraft/*,
+# /safety/*, /stories/*) got single-digit hits. Those JSON endpoints are for
+# in-page widgets, not grounding. Block them for known AI agents only —
+# Googlebot/Bingbot stay on User-agent: * above and keep full /api access for
+# WRS. Verified bot rate-limit exemptions in index.js are unchanged.
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: OAI-SearchBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+User-agent: Amazonbot
+User-agent: Bytespider
+User-agent: CCBot
+User-agent: cohere-ai
+User-agent: Diffbot
+User-agent: FacebookBot
+User-agent: Google-Extended
+User-agent: ImagesiftBot
+User-agent: meta-externalagent
+User-agent: Applebot-Extended
+Allow: /
+# Citable open data download (Dataset JSON-LD DataDownload on /safety/global)
+Allow: /api/safety/global/accidents
+Allow: /api/v1/
+# SPA widget / commercial rails — cite the HTML page families in llms.txt
+Disallow: /api/safety/articles
+Disallow: /api/routes/
+Disallow: /api/flights/
+Disallow: /api/map/
+Disallow: /api/turbulence/
+Disallow: /api/home/
+Disallow: /api/cwv
+Disallow: /api/auth
+Disallow: /api/subscriptions
+Disallow: /api/newsletter
+Disallow: /api/legal
+
+# Block build artifacts and source files
+User-agent: *
+Disallow: /src/
+Disallow: /.vite/
+
+# Cloudflare email-protection artifact — never a real page (GSC 404 cohort).
+# The decoder script is render-critical though: blocking it leaves obfuscated
+# `[email protected]` placeholders in the rendered DOM on /about, /contact,
+# /litigation and /editorial-standards (Semrush audit 2026-07-27, issue 130).
+# Allow the static script path, keep /cdn-cgi/l/ (the 404 cohort) blocked.
+Allow: /cdn-cgi/scripts/
+Disallow: /cdn-cgi/
+
+# Tracking-only query params — Google honours these wildcard patterns for
+# parameter URLs that should not be treated as distinct pages.
+Disallow: /*?utm_*
+Disallow: /*&utm_*
+Disallow: /*?ref=*
+Disallow: /*&ref=*
+Disallow: /*?fbclid=*
+Disallow: /*?gclid=*
+
+# Disallow internal search query parameter URLs from crawling
+Disallow: /search?*
+Disallow: /search/*
+
+# Self-hosted Umami, proxied at /insights/* (nginx/himaxym.conf). Googlebot's
+# renderer executes the page JS, so it fires the analytics beacon on every
+# render: 2,615 of the 10,890 requests verified Googlebot made in the week to
+# 2026-08-21 were `POST /insights/api/send` — 24% of the crawl budget spent on
+# a beacon that contributes nothing to rendering. Blocking the whole prefix
+# also stops the loader, so the beacon never fires for a crawler at all, and
+# Umami stops counting Googlebot renders as visits.
+Disallow: /insights/
+
+# Live turbulence forecast behind the route-page card (/api/turbulence/route).
+# Googlebot's renderer fetched it 431 times in the 9 days to 2026-08-31 — one
+# XHR per crawled route page for a body that can never be indexed. Unlike the
+# other route-page rails it cannot be SSR-seeded instead: the forecast is
+# recomputed from the current time against the latest GFS cycle and the card
+# prints its own age ("~Nh old"), so baking it into a body cached 15 min at
+# origin and up to 4h at the edge would make that label wrong. The card
+# self-hides when the fetch is blocked, and it carries no indexable text.
+Disallow: /api/turbulence/route
+
+# NOTE: no `Host:` directive — Yandex dropped support in 2021 and nothing else
+# ever read it. NOTE: `Content-Signal:` above is flagged as an invalid line by
+# Semrush's parser; that is a false positive. It is Cloudflare's Content
+# Signals Policy syntax, and RFC 9309 requires crawlers to ignore directives
+# they don't recognise. Do not remove it to silence the audit.
+
+# Sitemap location
+Sitemap: https://himaxym.com/sitemap.xml
+Sitemap: https://himaxym.com/news-sitemap.xml

@@ -1,0 +1,80 @@
+generated: '2026-09-03'
+method: searched
+source: >-
+  https://himaxym.com/developers ("Quickstart" and "Run it from your tools"
+  sections), verified with live unauthenticated calls to
+  https://himaxym.com/api/v1/data on 2026-09-03.
+docs: https://himaxym.com/developers
+description: >-
+  FlightFinder publishes no separate sandbox ENVIRONMENT — there is one production
+  base URL and no test/live key split. What it does publish, and what this artifact
+  records, is a credential-free way to exercise the real API: a documented keyless
+  tier plus two pre-built consoles generated from the OpenAPI.
+separate_sandbox_environment: false
+test_live_key_split: false
+test_fixtures: false
+test_clock: false
+no_credential_trial:
+  supported: true
+  mechanism: keyless tier — send no Authorization header at all
+  quota: 100 requests/day/IP
+  scope: every GET data endpoint
+  published_example: "curl 'https://himaxym.com/api/v1/data/events?limit=5'"
+  verified: >-
+    Run unauthenticated on 2026-09-03 against
+    https://himaxym.com/api/v1/data/events?limit=1 — HTTP 200 with real occurrence
+    records and RateLimit-Remaining: 91.
+  docs: https://himaxym.com/developers
+consoles:
+- name: Postman collection
+  url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  official: true
+  auth_preset: No Auth
+  description: >-
+    Every endpoint pre-filled and grouped by resource, built from the OpenAPI. The
+    provider ships it with No Auth so the keyless tier answers on the first Send.
+  http_status: 200
+- name: RapidAPI listing
+  url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+  official: true
+  auth_preset: gateway-managed
+  description: >-
+    Subscribe to the free Basic plan and call the API through the RapidAPI gateway,
+    which carries the key for you — no FlightFinder key is created.
+  caveat: >-
+    The provider warns that the origin rate limits are what it enforces and that a
+    platform may apply its own quota on top.
+  http_status: 200
+cheapest_verification_call:
+  operation: GET /ping
+  url: https://himaxym.com/api/v1/data/ping
+  response: '{"ok":true}'
+  description: The provider's own recommendation — "the cheapest way to verify a key works".
+test_values:
+  note: >-
+    No synthetic test identifiers exist and none are invented here. The corpus is
+    real public-record data, so any real value works as a test value. The following
+    are examples the PROVIDER publishes on its developer page and in its tool
+    schemas, not values authored by this pipeline.
+  published_examples:
+  - kind: family slug
+    value: boeing-737
+    source: 'https://himaxym.com/developers quickstart: ?family=boeing-737&fatal=1'
+  - kind: narrative address
+    value: atsb / AO-2024-001
+    source: 'https://himaxym.com/developers quickstart: /narratives/atsb/AO-2024-001'
+  - kind: airport slug
+    value: kden
+    source: MCP wildlife_strikes tool inputSchema description
+  - kind: species slug
+    value: mourning-dove
+    source: MCP wildlife_strikes tool inputSchema description
+  - kind: ICAO type designator
+    value: B738
+    source: OpenAPI GET /events parameter `type` description
+agent_surface:
+  mcp_endpoint: https://himaxym.com/mcp
+  auth: none
+  note: >-
+    The MCP server is also anonymous, so an agent can rehearse against the real tools
+    with no credential at all. See mcp/flightfinder-mcp.yml.
