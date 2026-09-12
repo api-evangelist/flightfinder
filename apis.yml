@@ -87,6 +87,8 @@ x-ownership-check:
     {name: flightfinder-safety, title: "FlightFinder Aviation Safety"}. No sibling-brand or third-party
     contract was found on any probed host.'
 common:
+- type: Website
+  url: https://www.himaxym.com/
 - type: DomainSecurity
   url: security/flightfinder-domain-security.yml
 - type: Authentication
