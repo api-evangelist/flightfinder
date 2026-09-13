@@ -1,25 +1,25 @@
 generated: '2026-09-03'
 method: probed
 status: published
-source: >-
-  Live JSON-RPC probe of https://himaxym.com/mcp on 2026-09-03: initialize returned
-  protocolVersion 2025-06-18 with serverInfo {name: flightfinder-safety, version:
-  1.0.0, title: "FlightFinder Aviation Safety"}, and tools/list returned 9 tools
-  with full inputSchemas. No Authorization header was sent on either call.
-description: >-
-  FlightFinder operates a first-party, anonymous, remote MCP server over Streamable
-  HTTP at https://himaxym.com/mcp. It is a projection of the same merged
-  aviation-safety corpus the REST API serves — an agent can call it right now with
-  no key, no install and no account.
+source: 'Live JSON-RPC probe of https://himaxym.com/mcp on 2026-09-03: initialize returned protocolVersion
+  2025-06-18 with serverInfo {name: flightfinder-safety, version: 1.0.0, title: "FlightFinder Aviation
+  Safety"}, and tools/list returned 9 tools with full inputSchemas. No Authorization header was sent on
+  either call.'
+description: FlightFinder operates a first-party, anonymous, remote MCP server over Streamable HTTP at
+  https://himaxym.com/mcp. It is a projection of the same merged aviation-safety corpus the REST API serves
+  — an agent can call it right now with no key, no install and no account.
 deployment:
   mode: remote
   endpoint: https://himaxym.com/mcp
   auth: none
   verified: probed
-  note: >-
-    No stdio package is published — there is no npm/PyPI MCP package for this
-    provider (registry searches for "flightfinder" and "himaxym" returned zero
-    results on 2026-09-03), so this is a remote-only deployment.
+  note: No stdio package is published — there is no npm/PyPI MCP package for this provider (registry searches
+    for "flightfinder" and "himaxym" returned zero results on 2026-09-03), so this is a remote-only deployment.
+  probe_prior: (never probed)
+  probe: live
+  probe_why: live
+  checked: '2026-09-11'
+  source: claimed-backlog re-probe 2026-09-11
 server:
   name: flightfinder-safety
   title: FlightFinder Aviation Safety
@@ -31,31 +31,27 @@ server:
   capabilities:
     tools:
       listChanged: false
-  get_behavior: >-
-    GET returns 405 with a JSON-RPC error body
-    ("GET not supported; POST JSON-RPC 2.0") — no SSE stream is offered.
+  get_behavior: GET returns 405 with a JSON-RPC error body ("GET not supported; POST JSON-RPC 2.0") —
+    no SSE stream is offered.
   rate_limit_observed: 'RateLimit-Policy: 120;w=60 (120 requests per 60s window) on the /mcp endpoint'
   tools_manifest: mcp/flightfinder-mcp-tools.json
 tool_count: 9
 tools:
 - name: search_accidents
-  description: >-
-    Search the merged aviation-accident corpus (occurrence-level dedup). Filters:
-    family slug, ISO alpha-2 country, occurrence type, operator substring, date
-    range, fatal-only. Returns a page plus next_cursor.
+  description: 'Search the merged aviation-accident corpus (occurrence-level dedup). Filters: family slug,
+    ISO alpha-2 country, occurrence type, operator substring, date range, fatal-only. Returns a page plus
+    next_cursor.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /events
 - name: get_accident
   description: Fetch one occurrence by FlightFinder id, with source-attribution links and narrative refs.
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /events/{id}
 - name: get_narrative
-  description: >-
-    Fetch an investigation narrative by (source, case id). Open-licensed sources
-    return full text; others a <=300-char excerpt plus a source_url deep link.
+  description: Fetch an investigation narrative by (source, case id). Open-licensed sources return full
+    text; others a <=300-char excerpt plus a source_url deep link.
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /narratives/{source}/{id}
 - name: aircraft_safety
-  description: >-
-    Aggregate safety statistics for an aircraft family: occurrences, hull losses,
-    fatal accidents, fatalities, first/latest year.
+  description: 'Aggregate safety statistics for an aircraft family: occurrences, hull losses, fatal accidents,
+    fatalities, first/latest year.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /aircraft/{family}/safety
 - name: list_sources
   description: Every data source with its license, homepage, narrative count and republication policy.
@@ -64,26 +60,18 @@ tools:
   description: Resolve an airport by ICAO ident or IATA code (OurAirports, CC0).
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /airports/{ident}
 - name: wildlife_strikes
-  description: >-
-    FAA National Wildlife Strike Database. No arguments gives global totals and the
-    yearly series; airport OR species gives that breakdown.
-  source_operation: >-
-    openapi/flightfinder-aviation-safety-data-openapi.json#GET /wildlife-strikes
-    (+ /airport/{slug}, /species/{slug})
+  description: FAA National Wildlife Strike Database. No arguments gives global totals and the yearly
+    series; airport OR species gives that breakdown.
+  source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /wildlife-strikes (+ /airport/{slug},
+    /species/{slug})
 - name: laser_incidents
-  description: >-
-    FAA Reported Laser Incidents. No arguments gives national totals; state OR
-    airport gives that breakdown.
-  source_operation: >-
-    openapi/flightfinder-aviation-safety-data-openapi.json#GET /laser-strikes
-    (+ /state/{slug}, /airport/{slug})
+  description: FAA Reported Laser Incidents. No arguments gives national totals; state OR airport gives
+    that breakdown.
+  source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /laser-strikes (+ /state/{slug},
+    /airport/{slug})
 - name: drone_sightings
-  description: >-
-    FAA UAS sighting reports. No arguments gives national totals; state gives that
-    breakdown.
-  source_operation: >-
-    openapi/flightfinder-aviation-safety-data-openapi.json#GET /drone-sightings
-    (+ /state/{slug})
+  description: FAA UAS sighting reports. No arguments gives national totals; state gives that breakdown.
+  source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /drone-sightings (+ /state/{slug})
 x-evidence:
   fetched: '2026-09-03'
   initialize:
