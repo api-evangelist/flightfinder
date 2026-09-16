@@ -23,38 +23,11 @@ tags:
 - Reference Data
 - Agent Ready
 apis:
-- name: FlightFinder Aviation Safety Data API
-  description: REST/JSON over the merged corpus. 17 paths / 18 operations in the served OpenAPI 3.0.3.
-    Keyless GET tier, CORS open, RateLimit-* headers on every response, per-record licence and attribution.
-  humanURL: https://himaxym.com/developers
-  baseURL: https://himaxym.com/api/v1/data
-  tags:
-  - Aviation
-  - Aviation Safety
-  - Accident Data
-  - Open Data
-  - Government Data
-  properties:
-  - type: OpenAPI
-    url: https://himaxym.com/api/v1/data/openapi.json
-  - type: OpenAPI
-    url: openapi/flightfinder-aviation-safety-data-openapi.json
-  - type: Documentation
-    url: https://himaxym.com/developers
-  - type: LLMsTxt
-    url: https://himaxym.com/llms.txt
-  - type: Postman
-    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
-  - type: X-SourceLicenses
-    url: https://himaxym.com/api/v1/data/sources
-  - type: Overlay
-    url: overlays/flightfinder-aviation-safety-data-overlay.yaml
-  - type: Marketplace
-    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
 - name: FlightFinder Aviation Safety MCP Server
-  description: First-party remote MCP server over Streamable HTTP (JSON-RPC 2.0, protocol 2025-06-18)
-    exposing nine read tools over the same corpus. Anonymous — no key, no account, no install. Probed
-    live on 2026-09-03; initialize and tools/list both returned 200 without an Authorization header.
+  description: >-
+    First-party remote MCP server over Streamable HTTP (JSON-RPC 2.0, protocol 2025-06-18) exposing nine
+    read tools over the same corpus. Anonymous — no key, no account, no install. Probed live on 2026-09-03;
+    initialize and tools/list both returned 200 without an Authorization header.
   humanURL: https://himaxym.com/developers
   baseURL: https://himaxym.com/mcp
   tags:
@@ -66,6 +39,206 @@ apis:
     url: mcp/flightfinder-mcp.yml
   - type: ToolCrosswalk
     url: mcp/flightfinder-tool-crosswalk.yml
+- aid: flightfinder:flightfinder-aircraft-api
+  name: FlightFinder Aircraft API
+  description: The Aircraft API from FlightFinder — 1 operation(s) for aircraft.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Aircraft
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-aircraft-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-airports-api
+  name: FlightFinder Airports API
+  description: The Airports API from FlightFinder — 1 operation(s) for airports.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Airports
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-airports-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-drone-sightings-api
+  name: FlightFinder Drone Sightings API
+  description: The Drone Sightings API from FlightFinder — 2 operation(s) for drone sightings.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Drone Sightings
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-drone-sightings-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-events-api
+  name: FlightFinder Events API
+  description: The Events API from FlightFinder — 2 operation(s) for events.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Events
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-events-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-keys-api
+  name: FlightFinder Keys API
+  description: The Keys API from FlightFinder — 2 operation(s) for keys.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Keys
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-keys-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-laser-strikes-api
+  name: FlightFinder Laser Strikes API
+  description: The Laser Strikes API from FlightFinder — 3 operation(s) for laser strikes.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Laser Strikes
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-laser-strikes-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-narratives-api
+  name: FlightFinder Narratives API
+  description: The Narratives API from FlightFinder — 1 operation(s) for narratives.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Narratives
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-narratives-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-ping-api
+  name: FlightFinder Ping API
+  description: The Ping API from FlightFinder — 1 operation(s) for ping.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Ping
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-ping-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-sources-api
+  name: FlightFinder Sources API
+  description: The Sources API from FlightFinder — 1 operation(s) for sources.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Sources
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-sources-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
+- aid: flightfinder:flightfinder-wildlife-strikes-api
+  name: FlightFinder Wildlife Strikes API
+  description: The Wildlife Strikes API from FlightFinder — 3 operation(s) for wildlife strikes.
+  humanURL: https://himaxym.com/developers
+  baseURL: https://himaxym.com/api/v1/data
+  tags:
+  - Wildlife Strikes
+  properties:
+  - type: OpenAPI
+    url: openapi/flightfinder-wildlife-strikes-api-openapi.yml
+  - type: Documentation
+    url: https://himaxym.com/developers
+  - type: LLMsTxt
+    url: https://himaxym.com/llms.txt
+  - type: Postman
+    url: https://documenter.getpostman.com/view/57824278/2sBYAuTBcp
+  - type: X-SourceLicenses
+    url: https://himaxym.com/api/v1/data/sources
+  - type: Marketplace
+    url: https://rapidapi.com/disclaimer8/api/aviation-safety-data
 maintainers:
 - FN: FlightFinder
   email: support@himaxym.com
@@ -87,6 +260,8 @@ x-ownership-check:
     {name: flightfinder-safety, title: "FlightFinder Aviation Safety"}. No sibling-brand or third-party
     contract was found on any probed host.'
 common:
+- type: Overlay
+  url: overlays/flightfinder-aviation-safety-data-overlay.yaml
 - type: Website
   url: https://www.himaxym.com/
 - type: DomainSecurity
