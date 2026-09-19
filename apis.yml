@@ -105,6 +105,8 @@ apis:
   humanURL: https://himaxym.com/developers
   baseURL: https://himaxym.com/api/v1/data
   tags:
+  - Event
+  tags_raw:
   - Events
   properties:
   - type: OpenAPI
