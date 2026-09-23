@@ -1,0 +1,214 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Events API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Events
+paths:
+  /events:
+    get:
+      summary: List occurrences (cursor pagination)
+      parameters:
+      - name: from
+        in: query
+        schema:
+          type: string
+          format: date
+        description: Earliest event date (YYYY-MM-DD).
+      - name: to
+        in: query
+        schema:
+          type: string
+          format: date
+        description: Latest event date (YYYY-MM-DD).
+      - name: country
+        in: query
+        schema:
+          type: string
+        description: ISO 3166-1 alpha-2 country code.
+      - name: type
+        in: query
+        schema:
+          type: string
+        description: ICAO aircraft type designator (e.g. B738).
+      - name: family
+        in: query
+        schema:
+          type: string
+        description: Aircraft family slug (e.g. boeing-737).
+      - name: operator
+        in: query
+        schema:
+          type: string
+        description: Operator name substring match.
+      - name: fatal
+        in: query
+        schema:
+          type: string
+          enum:
+          - '1'
+        description: Only fatal occurrences.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 25
+      - name: cursor
+        in: query
+        schema:
+          type: string
+        description: Opaque cursor — pass the previous page's next_cursor.
+      responses:
+        '200':
+          description: A page of occurrences with per-source attribution.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Occurrence'
+                  next_cursor:
+                    type:
+                    - string
+                    - 'null'
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Events
+      operationId: getEvents
+      x-operation-id-source: derived
+  /events/{id}:
+    get:
+      summary: One occurrence with sources and narrative refs
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: evt:aaiahk:2016-02-27:loss-of-control-inflight-accident-invest:ZLINZ242L
+      responses:
+        '200':
+          description: Occurrence facts + sources[] (attribution/license/url) + narratives[] refs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurrence'
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Events
+      operationId: getEventsById
+      x-operation-id-source: derived
+components:
+  schemas:
+    SourceLink:
+      type: object
+      properties:
+        source:
+          type: string
+        attribution:
+          type: string
+        license:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+    Occurrence:
+      type: object
+      description: Occurrence facts (always full) + per-source attribution. The detail endpoint adds narratives[] refs.
+      properties:
+        id:
+          type: string
+        occurrence_type:
+          type: string
+        event_date:
+          type: string
+        severity:
+          type: string
+        country_iso:
+          type:
+          - string
+          - 'null'
+        type_icao:
+          type:
+          - string
+          - 'null'
+        family_slug:
+          type:
+          - string
+          - 'null'
+        registration:
+          type:
+          - string
+          - 'null'
+        operator:
+          type:
+          - string
+          - 'null'
+        fatalities_total:
+          type: integer
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceLink'
+  responses:
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

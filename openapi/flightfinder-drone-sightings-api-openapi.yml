@@ -1,0 +1,113 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Drone Sightings API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Drone Sightings
+paths:
+  /drone-sightings:
+    get:
+      summary: FAA UAS (drone) sighting reports — global aggregates (US-gov public domain)
+      responses:
+        '200':
+          description: 'Hub rollups: totals, by-year, top states/cities, and recent report narratives.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Drone Sightings
+      operationId: getDroneSightings
+      x-operation-id-source: derived
+  /drone-sightings/state/{slug}:
+    get:
+      summary: FAA drone sightings for one US state
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+        description: State slug (e.g. california).
+        example: california
+      responses:
+        '200':
+          description: Per-state totals, top cities, and recent report narratives.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Drone Sightings
+      operationId: getDroneSightingsStateBySlug
+      x-operation-id-source: derived
+components:
+  responses:
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

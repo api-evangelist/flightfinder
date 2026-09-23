@@ -1,0 +1,147 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Narratives API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Narratives
+paths:
+  /narratives/{source}/{id}:
+    get:
+      summary: Narrative by source + the authority's own case id
+      description: narrative_text is full for open-licensed sources, an ~300-char excerpt + source_url deep link otherwise (policy field on GET /sources). Published article rewrites appear as a first-paragraph excerpt + canonical_url; pro keys also receive full_text under the no-public-republication license. Case ids containing '/' must be URL-encoded.
+      parameters:
+      - name: source
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Source code (see GET /sources).
+        example: ntsb
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The authority's own case id.
+        example: 20080107X00026
+      responses:
+        '200':
+          description: Policy-tiered narrative + facts + attribution.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Narrative'
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Narratives
+      operationId: getNarrativesBySourceById
+      x-operation-id-source: derived
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+    Narrative:
+      type: object
+      properties:
+        source:
+          type: string
+        id:
+          type: string
+          description: The authority's own case id.
+        slug:
+          type: string
+        policy:
+          type: string
+          enum:
+          - full
+          - excerpt
+        narrative_text:
+          type: string
+        probable_cause:
+          type:
+          - string
+          - 'null'
+        phase_of_flight:
+          type:
+          - string
+          - 'null'
+        facts:
+          type:
+          - object
+          - 'null'
+        attribution:
+          type: string
+        license:
+          type: string
+        source_url:
+          type: string
+        article:
+          type:
+          - object
+          - 'null'
+          properties:
+            title:
+              type: string
+            excerpt:
+              type: string
+            canonical_url:
+              type: string
+            full_text:
+              type: string
+              description: Pro tier only.
+            license:
+              type: string
+              description: 'Pro tier only: no-public-republication.'
+            license_note:
+              type: string
+  responses:
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

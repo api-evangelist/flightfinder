@@ -1,0 +1,98 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Aircraft API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Aircraft
+paths:
+  /aircraft/{family}/safety:
+    get:
+      summary: Family safety stats from the merged corpus
+      parameters:
+      - name: family
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Aircraft family slug (e.g. boeing-737).
+        example: boeing-737
+      responses:
+        '200':
+          description: Family info, ICAO type list, and merged-corpus stats.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  family:
+                    type: object
+                  types:
+                    type: array
+                    items:
+                      type: string
+                  stats:
+                    type:
+                    - object
+                    - 'null'
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Aircraft
+      operationId: getAircraftByFamilySafety
+      x-operation-id-source: derived
+components:
+  responses:
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

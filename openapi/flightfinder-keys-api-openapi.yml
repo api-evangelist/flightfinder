@@ -1,0 +1,183 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Keys API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Keys
+paths:
+  /keys:
+    post:
+      summary: Create an API key (account required)
+      description: Send your himaxym.com account JWT as the bearer token — NOT an API key. Returns the raw key exactly once; only a hash is stored. Up to 5 active keys per account (409 `key_limit` beyond that); the /keys routes accept 30 requests per 15 minutes per IP.
+      security:
+      - bearerKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - label
+              properties:
+                label:
+                  type: string
+                  minLength: 1
+                  maxLength: 64
+                  description: A name for the key (your app or project).
+      responses:
+        '201':
+          description: Key created — store `key` now, it is never shown again.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    example: ffd_...
+                  tier:
+                    type: string
+                    enum:
+                    - free
+                  limits:
+                    type: object
+                    properties:
+                      daily:
+                        type: integer
+                        example: 1000
+                      perMinute:
+                        type: integer
+                        example: 60
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/AccountAuthRequired'
+        '409':
+          description: '`key_limit` — 5 active keys already; revoke one with DELETE /keys/{id} first.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Keys
+      operationId: postKeys
+      x-operation-id-source: derived
+    get:
+      summary: List your API keys (metadata only)
+      description: Account JWT as the bearer token. Never returns a secret — id, label and usage only.
+      security:
+      - bearerKey: []
+      responses:
+        '200':
+          description: The calling account's active keys.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+        '401':
+          $ref: '#/components/responses/AccountAuthRequired'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Keys
+      operationId: getKeys
+      x-operation-id-source: derived
+  /keys/{id}:
+    delete:
+      summary: Revoke one of your own API keys
+      description: 'Account JWT as the bearer token. Owner-scoped: a key that is not yours answers 404, not 403.'
+      security:
+      - bearerKey: []
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+        example: 123
+      responses:
+        '200':
+          description: Revoked.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/AccountAuthRequired'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Keys
+      operationId: deleteKeysById
+      x-operation-id-source: derived
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+  responses:
+    BadRequest:
+      description: Invalid request body or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    AccountAuthRequired:
+      description: 'The /keys management routes need your himaxym.com ACCOUNT JWT, not an API key. Note the body shape differs from the data endpoints: `{"success": false, "message": "Unauthorized"}`.'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Unauthorized
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

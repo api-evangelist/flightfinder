@@ -1,0 +1,92 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Sources API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Sources
+paths:
+  /sources:
+    get:
+      summary: The source registry (licenses + narrative policy)
+      responses:
+        '200':
+          description: 'Every source: code, name, license, homepage, narrative count, policy.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+                        name:
+                          type: string
+                        license:
+                          type: string
+                        homepage:
+                          type:
+                          - string
+                          - 'null'
+                        narratives:
+                          type: integer
+                        policy:
+                          type: string
+                          enum:
+                          - full
+                          - excerpt
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Sources
+      operationId: getSources
+      x-operation-id-source: derived
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+  responses:
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.

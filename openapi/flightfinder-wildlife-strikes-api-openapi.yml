@@ -1,0 +1,146 @@
+openapi: 3.2.0
+info:
+  title: FlightFinder Aviation Safety Data Wildlife Strikes API
+  version: 1.0.0
+  description: 'Read-only JSON API over FlightFinder''s merged aviation-safety corpus: accident narratives aggregated from 120+ official investigation agencies, deduplicated into one occurrence-level dataset with derived family analytics.'
+  termsOfService: https://himaxym.com/developers
+  contact:
+    url: https://himaxym.com/developers
+servers:
+- url: https://himaxym.com/api/v1/data
+security:
+- bearerKey: []
+tags:
+- name: Wildlife Strikes
+paths:
+  /wildlife-strikes:
+    get:
+      summary: FAA wildlife strike database — global aggregates (US-gov public domain)
+      responses:
+        '200':
+          description: 'Hub rollups: totals, by-year, top airports/species, and notable strikes with FAA narrative remarks.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Wildlife Strikes
+      operationId: getWildlifeStrikes
+      x-operation-id-source: derived
+  /wildlife-strikes/airport/{slug}:
+    get:
+      summary: FAA wildlife strikes for one airport
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Airport slug (lowercased ICAO/FAA id, e.g. kden).
+        example: kden
+      responses:
+        '200':
+          description: Per-airport totals, top species, and notable strikes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Wildlife Strikes
+      operationId: getWildlifeStrikesAirportBySlug
+      x-operation-id-source: derived
+  /wildlife-strikes/species/{slug}:
+    get:
+      summary: FAA wildlife strikes for one species
+      parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Species slug (e.g. mourning-dove).
+        example: mourning-dove
+      responses:
+        '200':
+          description: Per-species totals, top airports, and notable strikes.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                  attribution:
+                    type: string
+        '401':
+          $ref: '#/components/responses/BadKey'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+      tags:
+      - Wildlife Strikes
+      operationId: getWildlifeStrikesSpeciesBySlug
+      x-operation-id-source: derived
+components:
+  responses:
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+  securitySchemes:
+    bearerKey:
+      type: http
+      scheme: bearer
+      description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.
