@@ -127,42 +127,7 @@ paths:
       operationId: deleteKeysById
       x-operation-id-source: derived
 components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
   responses:
-    BadRequest:
-      description: Invalid request body or parameters.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: No record matches.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded — retry after the Retry-After header (seconds).
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-          description: Seconds until the quota resets.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     AccountAuthRequired:
       description: 'The /keys management routes need your himaxym.com ACCOUNT JWT, not an API key. Note the body shape differs from the data endpoints: `{"success": false, "message": "Unauthorized"}`.'
       content:
@@ -176,6 +141,41 @@ components:
               message:
                 type: string
                 example: Unauthorized
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid request body or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
   securitySchemes:
     bearerKey:
       type: http

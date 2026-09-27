@@ -121,19 +121,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    SourceLink:
-      type: object
-      properties:
-        source:
-          type: string
-        attribution:
-          type: string
-        license:
-          type: string
-        url:
-          type:
-          - string
-          - 'null'
     Error:
       type: object
       properties:
@@ -183,13 +170,20 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SourceLink'
+    SourceLink:
+      type: object
+      properties:
+        source:
+          type: string
+        attribution:
+          type: string
+        license:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
   responses:
-    BadKey:
-      description: Unknown or revoked API key.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     RateLimited:
       description: Rate limit exceeded — retry after the Retry-After header (seconds).
       headers:
@@ -203,6 +197,12 @@ components:
             $ref: '#/components/schemas/Error'
     NotFound:
       description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
       content:
         application/json:
           schema:

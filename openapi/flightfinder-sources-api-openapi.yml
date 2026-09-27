@@ -55,18 +55,6 @@ paths:
       operationId: getSources
       x-operation-id-source: derived
 components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
   responses:
     BadKey:
       description: Unknown or revoked API key.
@@ -85,6 +73,18 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
   securitySchemes:
     bearerKey:
       type: http
