@@ -141,13 +141,8 @@ components:
               message:
                 type: string
                 example: Unauthorized
-    RateLimited:
-      description: Rate limit exceeded — retry after the Retry-After header (seconds).
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-          description: Seconds until the quota resets.
+    NotFound:
+      description: No record matches.
       content:
         application/json:
           schema:
@@ -158,8 +153,13 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    NotFound:
-      description: No record matches.
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
       content:
         application/json:
           schema:

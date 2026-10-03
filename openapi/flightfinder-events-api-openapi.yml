@@ -121,17 +121,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
     Occurrence:
       type: object
       description: Occurrence facts (always full) + per-source attribution. The detail endpoint adds narratives[] refs.
@@ -183,7 +172,24 @@ components:
           type:
           - string
           - 'null'
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
   responses:
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
     RateLimited:
       description: Rate limit exceeded — retry after the Retry-After header (seconds).
       headers:
@@ -191,12 +197,6 @@ components:
           schema:
             type: integer
           description: Seconds until the quota resets.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: No record matches.
       content:
         application/json:
           schema:

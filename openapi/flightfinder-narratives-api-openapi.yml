@@ -50,6 +50,30 @@ paths:
       operationId: getNarrativesBySourceById
       x-operation-id-source: derived
 components:
+  responses:
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     Error:
       type: object
@@ -116,30 +140,6 @@ components:
               description: 'Pro tier only: no-public-republication.'
             license_note:
               type: string
-  responses:
-    RateLimited:
-      description: Rate limit exceeded — retry after the Retry-After header (seconds).
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-          description: Seconds until the quota resets.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    NotFound:
-      description: No record matches.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadKey:
-      description: Unknown or revoked API key.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   securitySchemes:
     bearerKey:
       type: http
