@@ -262,6 +262,9 @@ x-ownership-check:
     {name: flightfinder-safety, title: "FlightFinder Aviation Safety"}. No sibling-brand or third-party
     contract was found on any probed host.'
 common:
+- type: CapabilityMap
+  url: capabilities/flightfinder-capability-edges.yml
+  name: FlightFinder Business Capability Map
 - type: Overlay
   url: overlays/flightfinder-aviation-safety-data-overlay.yaml
 - type: Website
