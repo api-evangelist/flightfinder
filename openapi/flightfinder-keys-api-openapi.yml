@@ -127,20 +127,19 @@ paths:
       operationId: deleteKeysById
       x-operation-id-source: derived
 components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
   responses:
-    AccountAuthRequired:
-      description: 'The /keys management routes need your himaxym.com ACCOUNT JWT, not an API key. Note the body shape differs from the data endpoints: `{"success": false, "message": "Unauthorized"}`.'
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-                example: false
-              message:
-                type: string
-                example: Unauthorized
     NotFound:
       description: No record matches.
       content:
@@ -164,18 +163,19 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
+    AccountAuthRequired:
+      description: 'The /keys management routes need your himaxym.com ACCOUNT JWT, not an API key. Note the body shape differs from the data endpoints: `{"success": false, "message": "Unauthorized"}`.'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: false
+              message:
+                type: string
+                example: Unauthorized
   securitySchemes:
     bearerKey:
       type: http

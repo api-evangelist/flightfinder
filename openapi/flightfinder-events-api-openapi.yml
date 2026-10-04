@@ -121,6 +121,30 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
+    SourceLink:
+      type: object
+      properties:
+        source:
+          type: string
+        attribution:
+          type: string
+        license:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
     Occurrence:
       type: object
       description: Occurrence facts (always full) + per-source attribution. The detail endpoint adds narratives[] refs.
@@ -159,30 +183,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SourceLink'
-    SourceLink:
-      type: object
-      properties:
-        source:
-          type: string
-        attribution:
-          type: string
-        license:
-          type: string
-        url:
-          type:
-          - string
-          - 'null'
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
   responses:
     NotFound:
       description: No record matches.
