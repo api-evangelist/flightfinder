@@ -62,12 +62,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    NotFound:
-      description: No record matches.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     RateLimited:
       description: Rate limit exceeded — retry after the Retry-After header (seconds).
       headers:
@@ -75,6 +69,12 @@ components:
           schema:
             type: integer
           description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
       content:
         application/json:
           schema:

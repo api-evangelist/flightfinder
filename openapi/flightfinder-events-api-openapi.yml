@@ -120,6 +120,30 @@ paths:
       operationId: getEventsById
       x-operation-id-source: derived
 components:
+  responses:
+    RateLimited:
+      description: Rate limit exceeded — retry after the Retry-After header (seconds).
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadKey:
+      description: Unknown or revoked API key.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     Error:
       type: object
@@ -132,19 +156,6 @@ components:
               example: rate_limited
             message:
               type: string
-    SourceLink:
-      type: object
-      properties:
-        source:
-          type: string
-        attribution:
-          type: string
-        license:
-          type: string
-        url:
-          type:
-          - string
-          - 'null'
     Occurrence:
       type: object
       description: Occurrence facts (always full) + per-source attribution. The detail endpoint adds narratives[] refs.
@@ -183,30 +194,19 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SourceLink'
-  responses:
-    NotFound:
-      description: No record matches.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    RateLimited:
-      description: Rate limit exceeded — retry after the Retry-After header (seconds).
-      headers:
-        Retry-After:
-          schema:
-            type: integer
-          description: Seconds until the quota resets.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadKey:
-      description: Unknown or revoked API key.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
+    SourceLink:
+      type: object
+      properties:
+        source:
+          type: string
+        attribution:
+          type: string
+        license:
+          type: string
+        url:
+          type:
+          - string
+          - 'null'
   securitySchemes:
     bearerKey:
       type: http

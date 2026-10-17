@@ -127,31 +127,7 @@ paths:
       operationId: deleteKeysById
       x-operation-id-source: derived
 components:
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-              example: rate_limited
-            message:
-              type: string
   responses:
-    NotFound:
-      description: No record matches.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Invalid request body or parameters.
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     RateLimited:
       description: Rate limit exceeded — retry after the Retry-After header (seconds).
       headers:
@@ -159,6 +135,12 @@ components:
           schema:
             type: integer
           description: Seconds until the quota resets.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: No record matches.
       content:
         application/json:
           schema:
@@ -176,6 +158,24 @@ components:
               message:
                 type: string
                 example: Unauthorized
+    BadRequest:
+      description: Invalid request body or parameters.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: rate_limited
+            message:
+              type: string
   securitySchemes:
     bearerKey:
       type: http
