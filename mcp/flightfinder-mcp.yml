@@ -38,39 +38,48 @@ server:
 tool_count: 9
 tools:
 - name: search_accidents
-  description: 'Search the merged aviation-accident corpus (occurrence-level dedup). Filters: family slug,
-    ISO alpha-2 country, occurrence type, operator substring, date range, fatal-only. Returns a page plus
-    next_cursor.'
+  description: 'Search the merged aviation-accident corpus (80+ official agencies, occurrence-level dedup).
+    Filters: aircraft family slug (e.g. "boeing-737"), ISO alpha-2 country, occurrence type, operator
+    substring, date range (from/to as YYYY-MM-DD), and fatal-only. Returns a page of occurrences with
+    source-attribution links and a next_cursor for pagination.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /events
 - name: get_accident
-  description: Fetch one occurrence by FlightFinder id, with source-attribution links and narrative refs.
+  description: Fetch one occurrence by its FlightFinder id, with source-attribution links and references
+    to the narratives available for it.
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /events/{id}
 - name: get_narrative
   description: Fetch an investigation narrative by (source, case id). Open-licensed sources return full
-    text; others a <=300-char excerpt plus a source_url deep link.
+    text; others return a ≤300-char excerpt plus a source_url deep link (per-source licensing policy).
+    id URL-encoding is handled for you — pass the raw case id.
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /narratives/{source}/{id}
 - name: aircraft_safety
-  description: 'Aggregate safety statistics for an aircraft family: occurrences, hull losses, fatal accidents,
-    fatalities, first/latest year.'
+  description: 'Aggregate safety statistics for an aircraft family: total occurrences, hull losses, fatal
+    accidents, total fatalities, and first/latest year.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /aircraft/{family}/safety
 - name: list_sources
-  description: Every data source with its license, homepage, narrative count and republication policy.
+  description: List every data source in the corpus with its license, homepage, narrative count, and republication
+    policy (full vs excerpt).
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /sources
 - name: airport_reference
-  description: Resolve an airport by ICAO ident or IATA code (OurAirports, CC0).
+  description: Resolve an airport by ICAO ident or IATA code (OurAirports, CC0). Returns name, city, country,
+    and coordinates.
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /airports/{ident}
 - name: wildlife_strikes
-  description: FAA National Wildlife Strike Database. No arguments gives global totals and the yearly
-    series; airport OR species gives that breakdown.
+  description: 'FAA National Wildlife Strike Database (US-government public domain). With no arguments:
+    global totals, the full yearly series since 1990, and the leading airports, species and flight phases.
+    Pass airport OR species for that breakdown. Slugs are lowercase and hyphenated (e.g. "kden", "mourning-dove").'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /wildlife-strikes (+ /airport/{slug},
     /species/{slug})
 - name: laser_incidents
-  description: FAA Reported Laser Incidents. No arguments gives national totals; state OR airport gives
-    that breakdown.
+  description: 'FAA Reported Laser Incidents — lasers aimed at aircraft (US-government public domain).
+    With no arguments: national totals, injuries and the yearly series. Pass state OR airport for that
+    breakdown, as a lowercase hyphenated slug.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /laser-strikes (+ /state/{slug},
     /airport/{slug})
 - name: drone_sightings
-  description: FAA UAS sighting reports. No arguments gives national totals; state gives that breakdown.
+  description: 'FAA UAS (drone) Sighting Reports filed by pilots and controllers (US-government public
+    domain). With no arguments: national totals, the yearly series and the leading states and cities.
+    Pass state for that breakdown, as a lowercase hyphenated slug.'
   source_operation: openapi/flightfinder-aviation-safety-data-openapi.json#GET /drone-sightings (+ /state/{slug})
 x-evidence:
   fetched: '2026-09-03'
@@ -108,3 +117,4 @@ tool_quality:
   scored: false
   note: Facts from the saved tools/list capture (mcp_tool_quality.py); recorded, not scored. Checks learned
     from Glimind's agent-readiness audit.
+tools_count: 9
