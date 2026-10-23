@@ -181,3 +181,9 @@ components:
       type: http
       scheme: bearer
       description: API key as a bearer token. On the /keys management routes this is the account JWT instead — the API key itself cannot create or revoke keys.
+x-provenance:
+  method: harvested
+  publisher: FlightFinder
+  source: https://himaxym.com/api/v1/data/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
